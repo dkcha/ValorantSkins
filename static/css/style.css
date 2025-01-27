@@ -1,15 +1,88 @@
-body {
-  font-family: Arial, sans-serif;
+/* Main container for all gun types */
+#guns-container {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(200px, 1fr)
+  ); /* Responsive grid columns */
+  gap: 20px; /* Spacing between grid items */
+  padding: 20px; /* Optional: Add padding around the grid */
 }
-.card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 16px;
-  margin: 8px;
-  display: inline-block;
-  text-align: center;
+
+/* Individual gun type container */
+.category {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center content horizontally */
+  gap: 10px; /* Add spacing between elements inside the category */
+  padding: 10px; /* Add padding inside the container */
+  border: 1px solid #ccc; /* Optional: Add a border for visual clarity */
+  background-color: #f9f9f9; /* Optional: Add a background color */
+  border-radius: 8px; /* Optional: Add rounded corners */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth hover effect */
 }
-img {
-  max-width: 100%;
-  border-radius: 4px;
+
+/* Hover effect for category */
+.category:hover {
+  transform: translateY(-5px); /* Slightly raise the container on hover */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a shadow on hover */
+}
+
+/* Container for the category image */
+.category-img-container {
+  width: 100%; /* Full width of the container */
+  height: 150px; /* Fixed height */
+  overflow: hidden; /* Ensure the image doesn't overflow */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Image inside the category image container */
+.category-img-container img {
+  width: 100%; /* Ensure the image fills the container width */
+  height: 100%; /* Ensure the image fills the container height */
+  object-fit: contain; /* Scale the image to fit within the container */
+}
+
+/* Container for the list of skins (hidden by default) */
+.weapons-container {
+  display: none; /* Hide the skins container by default */
+  flex-direction: column;
+  gap: 10px; /* Add spacing between skins */
+  padding: 10px; /* Add padding inside the container */
+}
+
+/* Show the skins container when the "visible" class is added */
+.weapons-container.visible {
+  display: flex;
+}
+
+/* Individual weapon card */
+.weapon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px; /* Add spacing between elements inside the weapon card */
+  padding: 10px; /* Add padding inside the weapon card */
+  border: 1px solid #ccc; /* Optional: Add a border for visual clarity */
+  background-color: #fff; /* Optional: Add a background color */
+  border-radius: 4px; /* Optional: Add rounded corners */
+}
+
+/* Weapon image inside the weapon card */
+.weapon img {
+  width: 100px; /* Fixed width for weapon images */
+  height: auto; /* Maintain aspect ratio */
+}
+
+@media (max-width: 768px) {
+  .category-img-container {
+    width: 100%; /* Full width on smaller screens */
+    height: 120px; /* Adjust height for smaller screens */
+  }
+
+  .weapon img {
+    width: 80px; /* Smaller weapon images on smaller screens */
+  }
 }

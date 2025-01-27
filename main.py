@@ -3,11 +3,30 @@ import requests
 
 app = Flask(__name__)
 
+"""
+    TODO
+    - Group skins by gun ** dict: { 
+                                'Stinger': { 
+                                    uuid: {
+                                        ... 
+                                    },
+                                    uuid: {
+                                        ...
+                                    }
+                                }
+                                
+    - Make container bigger for skin to show streamed video
+    - Carousel style viewing of available skins per gun group
+        - Display image should only show for carousel style
+    - Add streamed videos when clicked on / viewed
+"""
+
 @app.route('/')
 def index():
     # Serve the main HTML page
     return render_template('index.html')
 
+# todo: group skins by category or gun type
 @app.route('/api/skins')
 def get_skins():
     # Fetch data from the external API
@@ -15,11 +34,56 @@ def get_skins():
     response = requests.get(url)
     if response.status_code == 200:
         data = {}
+
         for obj in response.json()['data']:
-            data[obj['uuid']] = {field: obj[field] for field in obj}
+            # group by gun type
+            gun_group = find_gun_group(obj['assetPath'])
+            if gun_group not in data:
+                data[gun_group] = {}
+
+            data[gun_group][obj['uuid']] = {}  # Initialize the nested dictionary
+            for field in obj:
+                data[gun_group][obj['uuid']][field] = obj[field]
+
         return jsonify(data)
     else:
         return jsonify({'error': 'Failed to fetch data'}), 500
+    
+# find gun by group type
+def find_gun_group(asset_path):
+    gun_groups = group_by_gun()
+
+    for group in gun_groups:
+        if group in asset_path:
+            return gun_groups[group]
+        
+    return None
+
+def group_by_gun():
+    grouping = {}
+
+    grouping['ShooterGame/Content/Equippables/Guns/Sidearms/BasePistol/'] = 'Classic'
+    grouping['ShooterGame/Content/Equippables/Guns/Sidearms/Slim/'] = 'Shorty'
+    grouping['ShooterGame/Content/Equippables/Guns/Sidearms/AutoPistol/'] = 'Frenzy'
+    grouping['ShooterGame/Content/Equippables/Guns/Sidearms/Luger/'] = 'Ghost'
+    grouping['ShooterGame/Content/Equippables/Guns/Sidearms/Revolver/'] = 'Sheriff'
+    grouping['ShooterGame/Content/Equippables/Guns/SubMachineGuns/Vector/'] = 'Stinger'
+    grouping['ShooterGame/Content/Equippables/Guns/SubMachineGuns/MP5/'] = 'Spectre'
+    grouping['ShooterGame/Content/Equippables/Guns/Shotguns/PumpShotgun/'] = 'Bucky'
+    grouping['ShooterGame/Content/Equippables/Guns/Shotguns/AutoShotgun/'] = 'Judge'
+    grouping['ShooterGame/Content/Equippables/Guns/Rifles/Burst/'] = 'Bulldog'
+    grouping['ShooterGame/Content/Equippables/Guns/SniperRifles/DMR/'] = 'Guardian'
+    grouping['ShooterGame/Content/Equippables/Guns/Rifles/Carbine/'] = 'Phantom'
+    grouping['ShooterGame/Content/Equippables/Guns/Rifles/AK/'] = 'Vandal'
+    grouping['ShooterGame/Content/Equippables/Guns/SniperRifles/Leversniper/'] = 'Marshal'
+    grouping['ShooterGame/Content/Equippables/Guns/SniperRifles/Doublesniper/'] = 'Outlaw'
+    grouping['ShooterGame/Content/Equippables/Guns/SniperRifles/Boltsniper/'] = 'Operator'
+    grouping['ShooterGame/Content/Equippables/Guns/HvyMachineGuns/LMG/'] = 'Ares'
+    grouping['ShooterGame/Content/Equippables/Guns/HvyMachineGuns/HMG/'] = 'Odin'
+    grouping['ShooterGame/Content/Equippables/Melee/'] = 'Melee'
+
+    return grouping
+    
 
 if __name__ == '__main__':
     app.run(debug=True)
