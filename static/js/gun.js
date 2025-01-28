@@ -29,9 +29,6 @@ function displayGunDetails(gunData) {
   for (let uuid in gunData) {
     const skinItem = document.createElement("div");
     skinItem.className = "skin-item";
-    console.log("uuid: " + uuid);
-    console.log("in uuid: " + gunData[uuid]);
-    console.log(" hmm " + gunData[uuid]["displayIcon"]);
     skinItem.innerHTML = `
       <img src="${gunData[uuid]["displayIcon"] || "default-icon.png"}" alt="${
       gunData[uuid]["displayName"]
