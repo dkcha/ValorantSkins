@@ -2,6 +2,8 @@ from flask import Flask, jsonify, render_template
 import requests
 
 app = Flask(__name__)
+data = {}
+uuid = {}
 
 """
     TODO
@@ -26,15 +28,13 @@ def index():
     # Serve the main HTML page
     return render_template('index.html')
 
-# todo: group skins by category or gun type
+# todo: make this load on web page start, rather than having to navigate to index.html first to load
 @app.route('/api/skins')
 def get_skins():
     # Fetch data from the external API
     url = 'https://valorant-api.com/v1/weapons/skins'
     response = requests.get(url)
     if response.status_code == 200:
-        data = {}
-
         for obj in response.json()['data']:
             # group by gun type
             gun_group = find_gun_group(obj['assetPath'])
@@ -42,12 +42,34 @@ def get_skins():
                 data[gun_group] = {}
 
             data[gun_group][obj['uuid']] = {}  # Initialize the nested dictionary
+            uuid[obj['uuid']] = {}
             for field in obj:
                 data[gun_group][obj['uuid']][field] = obj[field]
+                uuid[obj['uuid']][field] = obj[field]
 
         return jsonify(data)
     else:
         return jsonify({'error': 'Failed to fetch data'}), 500
+    
+@app.route('/api/gun/skins/<string:gun_type>')
+def get_skins_by_gun_type(gun_type):
+    print('/api/gun/skins/<string:gun_type>')
+    return jsonify(data.get(gun_type, {'error': 'Gun type not found'}))
+
+# todo: group skins by category or gun type
+@app.route('/api/gun/<string:uuid>')
+def get_skin_by_uuid(uuid):
+    print('/api/gun/ route')
+    return uuid[uuid]
+
+@app.route('/gun.html')
+def gun_page():
+    return render_template('gun.html')
+
+@app.route('/gun')
+def gun_page_with_type():
+    return render_template('gun.html')
+
     
 # find gun by group type
 def find_gun_group(asset_path):

@@ -86,3 +86,51 @@
     width: 80px; /* Smaller weapon images on smaller screens */
   }
 }
+
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #121212;
+  color: white;
+  margin: 0;
+}
+
+#main-container {
+  text-align: center;
+  width: 90%;
+  max-width: 960px;
+}
+
+#video-container {
+  margin: 20px 0;
+}
+
+.horizontal-scroll {
+  display: flex;
+  overflow-x: auto;
+  padding: 10px;
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  gap: 10px;
+}
+
+.skin-item {
+  flex: 0 0 auto;
+  background-color: #292929;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.skin-item:hover {
+  background-color: #3f3f3f;
+}
+
+video {
+  border: 2px solid white;
+  border-radius: 8px;
+}
