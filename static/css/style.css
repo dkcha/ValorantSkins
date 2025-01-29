@@ -134,3 +134,18 @@ video {
   border: 2px solid white;
   border-radius: 8px;
 }
+
+.hover-item {
+  display: inline-block;
+  padding: 10px;
+  margin: 5px;
+  background-color: #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.hover-item:hover {
+  background-color: #aaa;
+  color: white;
+  font-weight: bold;
+}

@@ -53,7 +53,7 @@ def get_skins():
     
 @app.route('/api/gun/skins/<string:gun_type>')
 def get_skins_by_gun_type(gun_type):
-    print('/api/gun/skins/<string:gun_type>')
+    print('routed through /api/gun/skins/<string:gun_type>')
     return jsonify(data.get(gun_type, {'error': 'Gun type not found'}))
 
 # todo: group skins by category or gun type
