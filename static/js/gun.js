@@ -16,11 +16,11 @@ async function fetchGunDetails() {
   }
 }
 
+// maybe show the basic gun type image on first click so not throwing null?
 function displayGunDetails(gunData) {
   const skinContainer = document.getElementById("skin-container");
   skinContainer.innerHTML = "";
-  // gunData is the {} of all uuids
-  console.log(gunData);
+
   for (let skin in gunData) {
     const skinCard = document.createElement("div");
     skinCard.className = "skin-card";
@@ -30,8 +30,6 @@ function displayGunDetails(gunData) {
     `;
 
     // Handle skin click
-    //console.log("displayGunDetails skin: " + skin);
-    console.log("displayGunDetails skin: " + gunData[skin]);
     skinCard.addEventListener("click", () => showSkinDetails(gunData[skin]));
     skinContainer.appendChild(skinCard);
   }
@@ -48,75 +46,63 @@ function showSkinDetails(skin) {
   `;
 
   const chromaContainer = document.createElement("div");
+  chromaContainer.id = "chromaContainer";
 
   const levelContainer = document.createElement("div");
+  levelContainer.id = "levelContainer";
+
+  chromaContainer.innerHTML = "<h3>Chromas:</h3>";
+  levelContainer.innerHTML = "<h3>Levels:</h3>";
 
   // Create hover div for chromas
-  // todo: not loading it properly
   skin["chromas"]?.forEach((chroma) => {
-    const chromaDiv = document.createElement("div");
-    chromaDiv.className = "hover-item";
-    chromaDiv.textContent = chroma["displayName"];
-    chromaDiv.src = chroma["displayIcon"];
-    chromaDiv.addEventListener("mouseover", () => {
-      displayStreamedVideo(chroma["streamedVideo"]);
-      chromaDiv.addEventListener("mouseout", clearVideo);
-    });
-    chromaContainer.appendChild(chromaDiv);
+    if (chroma["streamedVideo"]) {
+      const chromaDiv = document.createElement("div");
+      chromaDiv.className = "hover-item";
+      chromaDiv.textContent = chroma["displayName"];
+      chromaDiv.src = chroma["displayIcon"];
+      chromaDiv.addEventListener("mouseover", () => {
+        displayStreamedVideo(chroma["streamedVideo"]);
+        chromaDiv.addEventListener("mouseout", clearVideo);
+      });
+      chromaContainer.appendChild(chromaDiv);
+    } else {
+      // Clear all HTML if no streamed videos
+      chromaContainer.innerHTML = "";
+    }
   });
 
   // Create hover div for levels
-  // todo: not loading it properly
   skin["levels"]?.forEach((level) => {
-    const levelDiv = document.createElement("div");
-    levelDiv.className = "hover-item";
-    //levelDiv.textContent = level["levelItem"].split("::")[1];
-    levelDiv.addEventListener("mouseover", () => {
-      displayStreamedVideo(level["streamedVideo"]);
-      levelDiv.addEventListener("mouseout", clearVideo);
-    });
-    levelContainer.appendChild(levelDiv);
+    if (level["streamedVideo"]) {
+      const levelDiv = document.createElement("div");
+      levelDiv.className = "hover-item";
+
+      // todo: Should print both Level and its value
+      if (level["levelItem"]) {
+        let text = level["levelItem"].split("::")[1];
+        if (text == "SoundEffects") {
+          text = "Sound Effects";
+        }
+        levelDiv.textContent = text;
+      } else {
+        levelDiv.textContent = "Base";
+      }
+      levelDiv.src = level["displayIcon"];
+      levelDiv.addEventListener("mouseover", () => {
+        displayStreamedVideo(level["streamedVideo"]);
+        levelDiv.addEventListener("mouseout", clearVideo);
+      });
+      levelContainer.appendChild(levelDiv);
+    } else {
+      // Clear all HTML if no streamed videos
+      levelContainer.innerHTML = "";
+    }
   });
 
-  if (chromaContainer.hasChildNodes()) {
-    chromaContainer.innerHTML = "<h3>Chromas:</h3>";
-    skinDetailsContainer.appendChild(chromaContainer);
-  }
-  if (levelContainer.hasChildNodes()) {
-    levelContainer.innerHTML = "<h3>Levels:</h3>";
-    skinDetailsContainer.appendChild(levelContainer);
-  }
+  skinDetailsContainer.appendChild(chromaContainer);
+  skinDetailsContainer.appendChild(levelContainer);
 }
-
-// function displayGunDetails(gunData) {
-//   document.getElementById("gun-title").innerText = gunData.displayName;
-
-//   const skinsList = document.getElementById("skins-list");
-//   skinsList.innerHTML = "";
-
-//   for (let uuid in gunData) {
-//     const skinItem = document.createElement("div");
-//     skinItem.className = "skin-item";
-//     skinItem.innerHTML = `
-//       <img src="${gunData[uuid]["displayIcon"] || "default-icon.png"}" alt="${
-//       gunData[uuid]["displayName"]
-//     }" class="skin-icon">
-//       <p>${gunData[uuid]["displayName"]}</p>
-//     `;
-
-//     // Handle click to update video or image display
-//     // todo: need to handle levels/chromas for videos
-//     skinItem.addEventListener("click", () => {
-//       if (gunData[uuid]["streamedVideo"]) {
-//         updateVideoDisplay(gunData[uuid]["streamedVideo"]);
-//       } else {
-//         updateImageDisplay(gunData[uuid]["displayIcon"]);
-//       }
-//     });
-
-//     skinsList.appendChild(skinItem);
-//   }
-// }
 
 // Helper function to display streamed video
 function displayStreamedVideo(videoUrl) {
@@ -140,26 +126,6 @@ function displayStreamedVideo(videoUrl) {
 function clearVideo() {
   const videoContainer = document.getElementById("video-container");
   videoContainer.innerHTML = ""; // Clears the video when mouse leaves
-}
-
-function updateVideoDisplay(videoUrl) {
-  const videoElement = document.getElementById("skin-video");
-  const videoSource = document.getElementById("video-source");
-
-  videoSource.src = videoUrl;
-  videoElement.load();
-  videoElement.style.display = "block";
-
-  document.getElementById("default-image").style.display = "none";
-}
-
-function updateImageDisplay(imageUrl) {
-  const imageElement = document.getElementById("default-image");
-
-  imageElement.src = imageUrl || "default-gun-image.jpg";
-  imageElement.style.display = "block";
-
-  document.getElementById("skin-video").style.display = "none";
 }
 
 fetchGunDetails();

@@ -26,11 +26,14 @@ uuid = {}
 @app.route('/')
 def index():
     # Serve the main HTML page
+    print('/ ????')
     return render_template('index.html')
 
 # todo: make this load on web page start, rather than having to navigate to index.html first to load
+# or learn how to cache it so it doesn't have to reload it
 @app.route('/api/skins')
 def get_skins():
+    print('routed through /api/skins')
     # Fetch data from the external API
     url = 'https://valorant-api.com/v1/weapons/skins'
     response = requests.get(url)
@@ -59,15 +62,17 @@ def get_skins_by_gun_type(gun_type):
 # todo: group skins by category or gun type
 @app.route('/api/gun/<string:uuid>')
 def get_skin_by_uuid(uuid):
-    print('/api/gun/ route')
+    print('routed through /api/gun/<string::uuid>')
     return uuid[uuid]
 
 @app.route('/gun.html')
 def gun_page():
+    print('routed through /gun.html')
     return render_template('gun.html')
 
 @app.route('/gun')
 def gun_page_with_type():
+    print('routed through /gun')
     return render_template('gun.html')
 
     
@@ -109,14 +114,3 @@ def group_by_gun():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-# # Serialize the `data` dictionary to a JSON string with double quotes
-# json_data_with_double_quotes = json.dumps(data, indent=4)
-
-# # Print the JSON string
-# #print(json_data_with_double_quotes)
-# #print(data)
-
-# # Figure out how frontend really, how to connect images from API response links to populate in HTML
-# print(data['e49c0fd2-435c-2c41-9164-4996080f455b'])
