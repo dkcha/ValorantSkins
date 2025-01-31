@@ -37,6 +37,7 @@ function displayGunDetails(gunData) {
 
 // only create button if there's a streamed video that exists for it, and make it hover instead of click
 function showSkinDetails(skin) {
+  clearVideo();
   const skinDetailsContainer = document.getElementById("skin-details");
   skinDetailsContainer.innerHTML = `
     <h2>${skin["displayName"]}</h2>
@@ -55,6 +56,7 @@ function showSkinDetails(skin) {
   levelContainer.innerHTML = "<h3>Levels:</h3>";
 
   // Create hover div for chromas
+  let anyChroma = false;
   skin["chromas"]?.forEach((chroma) => {
     if (chroma["streamedVideo"]) {
       const chromaDiv = document.createElement("div");
@@ -63,42 +65,52 @@ function showSkinDetails(skin) {
       chromaDiv.src = chroma["displayIcon"];
       chromaDiv.addEventListener("mouseover", () => {
         displayStreamedVideo(chroma["streamedVideo"]);
-        chromaDiv.addEventListener("mouseout", clearVideo);
+        //chromaDiv.addEventListener("mouseout", clearVideo);
       });
       chromaContainer.appendChild(chromaDiv);
-    } else {
-      // Clear all HTML if no streamed videos
-      chromaContainer.innerHTML = "";
+      anyChroma = true;
     }
   });
 
+  if (!anyChroma) {
+    // Clear all HTML if no streamed videos
+    console.log("Clearing all innerHtml Chroma why");
+    chromaContainer.innerHTML = "";
+  }
+
   // Create hover div for levels
+  let levelNum = 1;
+  let anyLevel = false;
   skin["levels"]?.forEach((level) => {
     if (level["streamedVideo"]) {
       const levelDiv = document.createElement("div");
       levelDiv.className = "hover-item";
 
-      // todo: Should print both Level and its value
+      // todo: Level should be white and bold?
       if (level["levelItem"]) {
         let text = level["levelItem"].split("::")[1];
         if (text == "SoundEffects") {
           text = "Sound Effects";
         }
-        levelDiv.textContent = text;
+        levelDiv.innerHTML = "Level " + levelNum + "<br>" + text;
       } else {
-        levelDiv.textContent = "Base";
+        levelDiv.innerHTML = "Level " + levelNum + "<br>Base";
       }
       levelDiv.src = level["displayIcon"];
       levelDiv.addEventListener("mouseover", () => {
         displayStreamedVideo(level["streamedVideo"]);
-        levelDiv.addEventListener("mouseout", clearVideo);
+        //levelDiv.addEventListener("mouseout", clearVideo);
       });
       levelContainer.appendChild(levelDiv);
-    } else {
-      // Clear all HTML if no streamed videos
-      levelContainer.innerHTML = "";
+      anyLevel = true;
     }
+    levelNum++;
   });
+
+  if (!anyLevel) {
+    // Clear all HTML if no streamed videos
+    levelContainer.innerHTML = "";
+  }
 
   skinDetailsContainer.appendChild(chromaContainer);
   skinDetailsContainer.appendChild(levelContainer);
