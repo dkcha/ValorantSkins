@@ -1,3 +1,8 @@
+// Simple home page button functionality
+document.getElementById("home-button").addEventListener("click", () => {
+  window.location.href = "/";
+});
+
 async function fetchGunDetails() {
   const params = new URLSearchParams(window.location.search);
   const gunType = params.get("type");
