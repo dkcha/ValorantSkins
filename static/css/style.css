@@ -243,6 +243,64 @@ video {
   border-radius: 8px;
 }
 
+/* Styling for media container (holds base image of skin or streamed videos of chroma/levels */
+#media-container {
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  width: 100%; /* Ensure the container takes full width */
+  height: 400px; /* Set a fixed height for the container */
+  margin-bottom: 20px; /* Add spacing below the media container */
+  background-color: #1e1e1e; /* Optional: Add a background color */
+  border-radius: 8px; /* Optional: Add rounded corners */
+}
+
+#skin-image,
+#skin-video {
+  max-width: 100%; /* Ensure the media fits within the container */
+  max-height: 100%; /* Ensure the media fits within the container */
+  border-radius: 8px; /* Optional: Add rounded corners */
+}
+
+#media-container.loading {
+  position: relative;
+}
+
+#media-container.loading::after {
+  content: "Loading...";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 16px;
+}
+
+/* Volume slider styling */
+#volume-control {
+  margin-bottom: 20px; /* Add spacing below the volume slider */
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Add spacing between the label and the slider */
+}
+
+#volume-slider {
+  width: 150px; /* Adjust the width of the slider */
+}
+
+#mute-button {
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#mute-button:hover {
+  background-color: #0056b3;
+}
+
 #home-button {
   background-color: #007bff;
   color: white;

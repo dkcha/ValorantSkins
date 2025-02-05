@@ -10,9 +10,45 @@
     <a href="/" id="home-button">Back to Home</a>
     <button id="refresh-button">Refresh Data</button>
     <div id="main-container">
+      <!-- Volume Slider -->
+      <div id="volume-control">
+        <label for="volume-slider">Volume:</label>
+        <input
+          type="range"
+          id="volume-slider"
+          min="0"
+          max="1"
+          step="0.01"
+          value="1"
+        />
+        <button id="mute-button">Mute</button>
+      </div>
+
       <h1 id="gun-title">Select a Gun Skin</h1>
-      <div id="skin-details"></div>
-      <div id="video-container"></div>
+
+      <!-- Skin Details Container -->
+      <div id="skin-details">
+        <!-- Media Container -->
+        <div id="media-container">
+          <img
+            id="skin-image"
+            src=""
+            alt="Selected Skin"
+            style="display: none"
+          />
+          <video
+            id="skin-video"
+            controls
+            autoplay
+            width="600"
+            style="display: none"
+          ></video>
+        </div>
+
+        <!-- Chromas and Levels -->
+        <div id="chromaContainer"></div>
+        <div id="levelContainer"></div>
+      </div>
 
       <!-- Horizontal Skin List -->
       <div id="skin-container" class="horizontal-scroll"></div>

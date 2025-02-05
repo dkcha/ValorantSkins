@@ -23,7 +23,7 @@ async function fetchGunDetails() {
   }
 }
 
-// maybe show the basic gun type image on first click so not throwing null?
+// todo: some skins like Game Over Sheriff have their displayIcon/fullRender nested inside levels/chromas
 function displayGunDetails(gunData, gunType) {
   const skinContainer = document.getElementById("skin-container");
   skinContainer.innerHTML = "";
@@ -53,88 +53,106 @@ function displayGunDetails(gunData, gunType) {
 // Track currently selected chroma for highlighting purposes
 let selectedChroma = null;
 
-// only create button if there's a streamed video that exists for it, and make it hover instead of click
+// todo: replace image of gun in skin-details with streamedVideo (if exists otherwise leave alone)
 function showSkinDetails(skin, gunType) {
-  clearVideo();
   const skinDetailsContainer = document.getElementById("skin-details");
+  const mediaContainer = document.getElementById("media-container");
+  const skinVideo = document.getElementById("skin-video");
+  const skinImage = document.getElementById("skin-image");
 
   // Show the container
   skinDetailsContainer.classList.add("visible");
 
-  // Populate the container with skin details
-  skinDetailsContainer.innerHTML = `
-    <h2>${skin["displayName"]}</h2>
-    <img src="${
-      skin["fullRender"] ||
-      skin["displayIcon"] ||
-      `/static/images/${gunType.toLowerCase()}_dark.png`
-    }" alt="${skin["displayName"]}">
-  `;
+  // Clear previous content
+  skinVideo.style.display = "none";
+  skinImage.style.display = "none";
+  skinVideo.src = "";
+  skinImage.src = "";
 
-  const chromaContainer = document.createElement("div");
-  chromaContainer.id = "chromaContainer";
+  // Display the skin image (displayIcon or fullRender)
+  skinImage.src =
+    skin["displayIcon"] ||
+    skin["fullRender"] ||
+    `/static/images/${gunType.toLowerCase()}_dark.png`;
+  skinImage.style.display = "block";
 
-  const levelContainer = document.createElement("div");
-  levelContainer.id = "levelContainer";
-
+  // Populate chromas
+  const chromaContainer = document.getElementById("chromaContainer");
   chromaContainer.innerHTML = "<h3>Chromas:</h3>";
-  levelContainer.innerHTML = "<h3>Levels:</h3>";
 
   let anyChroma = false;
   skin["chromas"]?.forEach((chroma) => {
-    if (chroma["streamedVideo"]) {
-      const chromaDiv = document.createElement("div");
-      chromaDiv.className = "chroma-item";
+    const chromaDiv = document.createElement("div");
+    chromaDiv.className = "chroma-item";
 
-      // Create an image element for the swatch
-      const swatchImage = document.createElement("img");
-      swatchImage.src = chroma["swatch"] || "/static/images/default_swatch.png"; // Fallback image if swatch is missing
-      swatchImage.alt = chroma["displayName"];
-      swatchImage.className = "chroma-swatch";
+    // Create an image element for the swatch
+    const swatchImage = document.createElement("img");
+    swatchImage.src = chroma["swatch"] || "/static/images/default_swatch.png"; // Fallback image if swatch is missing
+    swatchImage.alt = chroma["displayName"];
+    swatchImage.className = "chroma-swatch";
 
-      // Create a text element for the chroma name
-      const chromaText = document.createElement("div");
-      chromaText.textContent = chroma["displayName"];
-      chromaText.className = "chroma-text";
+    // Create a text element for the chroma name
+    const chromaText = document.createElement("div");
+    chromaText.textContent = chroma["displayName"];
+    chromaText.className = "chroma-text";
 
-      // Append the image and text to the chromaDiv
-      chromaDiv.appendChild(swatchImage);
-      chromaDiv.appendChild(chromaText);
+    // Append the image and text to the chromaDiv
+    chromaDiv.appendChild(swatchImage);
+    chromaDiv.appendChild(chromaText);
 
-      // Handle hover events
-      chromaDiv.addEventListener("mouseover", () => {
-        chromaText.style.display = "block"; // Show text on hover
-      });
+    // Handle hover events
+    chromaDiv.addEventListener("mouseover", () => {
+      chromaText.style.display = "block"; // Show text on hover
+    });
 
-      chromaDiv.addEventListener("mouseout", () => {
-        chromaText.style.display = "none"; // Hide text on mouseout
-      });
+    chromaDiv.addEventListener("mouseout", () => {
+      chromaText.style.display = "none"; // Hide text on mouseout
+      skinVideo.style.display = "none";
+      skinImage.style.display = "block";
+      skinVideo.pause(); // Pause the video
+      skinVideo.currentTime = 0; // Reset the video to the beginning
+    });
 
-      // Handle click to select the chroma and display the streamed video
-      chromaDiv.addEventListener("click", () => {
-        // Remove highlight from the previously selected chroma
-        if (selectedChroma) {
-          selectedChroma.classList.remove("selected");
-        }
+    // Handle click to highlight the chroma
+    chromaDiv.addEventListener("click", () => {
+      // Remove highlight from the previously selected chroma
+      if (selectedChroma) {
+        selectedChroma.classList.remove("selected");
+      }
 
-        // Highlight the clicked chroma
-        chromaDiv.classList.add("selected");
-        selectedChroma = chromaDiv;
+      // Highlight the clicked chroma
+      chromaDiv.classList.add("selected");
+      selectedChroma = chromaDiv;
 
-        // Display the streamed video
-        displayStreamedVideo(chroma["streamedVideo"]);
-      });
+      if (chroma["streamedVideo"]) {
+        // If the chroma has a streamed video, display it
+        skinVideo.src = chroma["streamedVideo"];
+        skinVideo.style.display = "block";
+        skinImage.style.display = "none";
+        skinVideo.play(); // Start playing the video
+      } else {
+        // If the chroma doesn't have a streamed video, display the skin's displayIcon or fullRender
+        skinImage.src =
+          chroma["displayIcon"] ||
+          chroma["fullRender"] ||
+          `/static/images/${gunType.toLowerCase()}_dark.png`;
+        skinImage.style.display = "block";
+        skinVideo.style.display = "none";
+      }
+    });
 
-      chromaContainer.appendChild(chromaDiv);
-      anyChroma = true;
-    }
+    chromaContainer.appendChild(chromaDiv);
+    anyChroma = true;
   });
 
   if (!anyChroma) {
     chromaContainer.innerHTML = "<h3>Chromas:</h3><p>No chromas available.</p>";
   }
 
-  // Create hover div for levels
+  // Populate levels
+  const levelContainer = document.getElementById("levelContainer");
+  levelContainer.innerHTML = "<h3>Levels:</h3>";
+
   let levelNum = 1;
   let anyLevel = false;
   skin["levels"]?.forEach((level) => {
@@ -142,7 +160,6 @@ function showSkinDetails(skin, gunType) {
       const levelDiv = document.createElement("div");
       levelDiv.className = "hover-item";
 
-      // todo: Level should be white and bold?
       if (level["levelItem"]) {
         let text = level["levelItem"].split("::")[1];
         if (text == "SoundEffects") {
@@ -153,9 +170,22 @@ function showSkinDetails(skin, gunType) {
         levelDiv.innerHTML = "Level " + levelNum + "<br>Base";
       }
       levelDiv.src = level["displayIcon"];
+
+      // Handle hover events
       levelDiv.addEventListener("mouseover", () => {
-        displayStreamedVideo(level["streamedVideo"]);
+        skinVideo.src = level["streamedVideo"];
+        skinVideo.style.display = "block";
+        skinImage.style.display = "none";
+        skinVideo.play(); // Start playing the video
       });
+
+      levelDiv.addEventListener("mouseout", () => {
+        skinVideo.style.display = "none";
+        skinImage.style.display = "block";
+        skinVideo.pause(); // Pause the video
+        skinVideo.currentTime = 0; // Reset the video to the beginning
+      });
+
       levelContainer.appendChild(levelDiv);
       anyLevel = true;
     }
@@ -165,9 +195,6 @@ function showSkinDetails(skin, gunType) {
   if (!anyLevel) {
     levelContainer.innerHTML = "<h3>Levels:</h3><p>No levels available.</p>";
   }
-
-  skinDetailsContainer.appendChild(chromaContainer);
-  skinDetailsContainer.appendChild(levelContainer);
 }
 
 // Helper function to display streamed video
@@ -203,9 +230,69 @@ document.getElementById("refresh-button").addEventListener("click", () => {
   fetchGunDetails(); // Refetch the data
 });
 
+////////////////////////////////////////////////
+// Buttons and other miscellaneous functionality
+////////////////////////////////////////////////
+
 // Simple home page button functionality
 document.getElementById("home-button").addEventListener("click", () => {
   window.location.href = "/";
 });
 
+// Get the volume slider element
+const volumeSlider = document.getElementById("volume-slider");
+
+// Get all video elements on the page
+const videos = document.querySelectorAll("video");
+
+// Load the saved volume level from localStorage (default to 1 if not set)
+const savedVolume = localStorage.getItem("volumeLevel");
+const initialVolume = savedVolume !== null ? parseFloat(savedVolume) : 1;
+
+// Set the initial volume for all videos and the slider
+videos.forEach((video) => {
+  video.volume = initialVolume;
+});
+volumeSlider.value = initialVolume;
+
+// Add an event listener to the volume slider
+volumeSlider.addEventListener("input", () => {
+  const volume = volumeSlider.value; // Get the current slider value
+
+  // Set the volume for all videos
+  videos.forEach((video) => {
+    video.volume = volume;
+  });
+
+  // Save the volume level to localStorage
+  localStorage.setItem("volumeLevel", volume);
+});
+
+// Optional: Add a mute button
+const muteButton = document.getElementById("mute-button");
+let isMuted = false;
+
+muteButton.addEventListener("click", () => {
+  isMuted = !isMuted; // Toggle mute state
+
+  // Mute/unmute all videos
+  videos.forEach((video) => {
+    video.muted = isMuted;
+  });
+
+  // Update button text
+  muteButton.textContent = isMuted ? "Unmute" : "Mute";
+
+  // If unmuting, restore the volume level from localStorage
+  if (!isMuted) {
+    const savedVolume = localStorage.getItem("volumeLevel");
+    const volume = savedVolume !== null ? parseFloat(savedVolume) : 1;
+    videos.forEach((video) => {
+      video.volume = volume;
+    });
+    volumeSlider.value = volume;
+  }
+});
+
+// Fetch and load gun skin data
 fetchGunDetails();
