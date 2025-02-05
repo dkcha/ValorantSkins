@@ -23,23 +23,12 @@ uuid = {}
     - Add streamed videos when clicked on / viewed
 """
 
-@app.route('/')
-def index():
-    # Serve the main HTML page
-    print('/ ????')
-    return render_template('index.html')
-
-# todo: make this load on web page start, rather than having to navigate to index.html first to load
-# or learn how to cache it so it doesn't have to reload it
-@app.route('/api/skins')
-def get_skins():
-    print('routed through /api/skins')
-    # Fetch data from the external API
+def load_skins():
     url = 'https://valorant-api.com/v1/weapons/skins'
     response = requests.get(url)
     if response.status_code == 200:
+        print('Successful API request to valorant-api')
         for obj in response.json()['data']:
-            # group by gun type
             gun_group = find_gun_group(obj['assetPath'])
             if gun_group not in data:
                 data[gun_group] = {}
@@ -49,33 +38,10 @@ def get_skins():
             for field in obj:
                 data[gun_group][obj['uuid']][field] = obj[field]
                 uuid[obj['uuid']][field] = obj[field]
-
-        return jsonify(data)
+                
     else:
-        return jsonify({'error': 'Failed to fetch data'}), 500
-    
-@app.route('/api/gun/skins/<string:gun_type>')
-def get_skins_by_gun_type(gun_type):
-    print('routed through /api/gun/skins/<string:gun_type>')
-    return jsonify(data.get(gun_type, {'error': 'Gun type not found'}))
+        print('Failed API request to valorant-api')
 
-# todo: group skins by category or gun type
-@app.route('/api/gun/<string:uuid>')
-def get_skin_by_uuid(uuid):
-    print('routed through /api/gun/<string::uuid>')
-    return uuid[uuid]
-
-@app.route('/gun.html')
-def gun_page():
-    print('routed through /gun.html')
-    return render_template('gun.html')
-
-@app.route('/gun')
-def gun_page_with_type():
-    print('routed through /gun')
-    return render_template('gun.html')
-
-    
 # find gun by group type
 def find_gun_group(asset_path):
     gun_groups = group_by_gun()
@@ -110,7 +76,65 @@ def group_by_gun():
     grouping['ShooterGame/Content/Equippables/Melee/'] = 'Melee'
 
     return grouping
+
+# Load skins when the application starts
+load_skins()
+
+@app.route('/')
+def index():
+    # Serve the main HTML page
+    print('routed through /')
+    return render_template('index.html')
+
+# todo: make this load on web page start, rather than having to navigate to index.html first to load
+# or learn how to cache it so it doesn't have to reload it
+@app.route('/api/skins')
+def get_skins():
+    print('routed through /api/skins')
+    return jsonify(data)
+# @app.route('/api/skins')
+# def get_skins():
+#     print('routed through /api/skins')
+#     # Fetch data from the external API
+#     url = 'https://valorant-api.com/v1/weapons/skins'
+#     response = requests.get(url)
+#     if response.status_code == 200:
+#         for obj in response.json()['data']:
+#             # group by gun type
+#             gun_group = find_gun_group(obj['assetPath'])
+#             if gun_group not in data:
+#                 data[gun_group] = {}
+
+#             data[gun_group][obj['uuid']] = {}  # Initialize the nested dictionary
+#             uuid[obj['uuid']] = {}
+#             for field in obj:
+#                 data[gun_group][obj['uuid']][field] = obj[field]
+#                 uuid[obj['uuid']][field] = obj[field]
+
+#         return jsonify(data)
+#     else:
+#         return jsonify({'error': 'Failed to fetch data'}), 500
     
+@app.route('/api/gun/skins/<string:gun_type>')
+def get_skins_by_gun_type(gun_type):
+    print('routed through /api/gun/skins/<string:gun_type>')
+    return jsonify(data.get(gun_type, {'error': 'Gun type not found'}))
+
+# todo: group skins by category or gun type
+@app.route('/api/gun/<string:uuid>')
+def get_skin_by_uuid(uuid):
+    print('routed through /api/gun/<string::uuid>')
+    return uuid[uuid]
+
+@app.route('/gun.html')
+def gun_page():
+    print('routed through /gun.html')
+    return render_template('gun.html')
+
+@app.route('/gun')
+def gun_page_with_type():
+    print('routed through /gun')
+    return render_template('gun.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,8 +1,3 @@
-// Simple home page button functionality
-document.getElementById("home-button").addEventListener("click", () => {
-  window.location.href = "/";
-});
-
 async function fetchGunDetails() {
   const params = new URLSearchParams(window.location.search);
   const gunType = params.get("type");
@@ -12,25 +7,48 @@ async function fetchGunDetails() {
     return;
   }
 
-  try {
-    const response = await fetch(`/api/gun/skins/${gunType}`);
-    const gunData = await response.json();
-    displayGunDetails(gunData);
-  } catch (error) {
-    console.error("Error fetching gun details:", error);
+  // try {
+  //   const response = await fetch(`/api/gun/skins/${gunType}`);
+  //   const gunData = await response.json();
+  //   displayGunDetails(gunData);
+  // } catch (error) {
+  //   console.error("Error fetching gun details:", error);
+  // }
+
+  // Check local storage first
+  const cachedData = localStorage.getItem(gunType);
+  if (cachedData) {
+    displayGunDetails(JSON.parse(cachedData), gunType);
+  } else {
+    try {
+      const response = await fetch(`/api/gun/skins/${gunType}`);
+      const gunData = await response.json();
+      localStorage.setItem(gunType, JSON.stringify(gunData)); // Cache the data
+      displayGunDetails(gunData, gunType);
+    } catch (error) {
+      console.error("Error fetching gun details:", error);
+    }
   }
 }
 
 // maybe show the basic gun type image on first click so not throwing null?
-function displayGunDetails(gunData) {
+function displayGunDetails(gunData, gunType) {
   const skinContainer = document.getElementById("skin-container");
   skinContainer.innerHTML = "";
 
   for (let skin in gunData) {
     const skinCard = document.createElement("div");
     skinCard.className = "skin-card";
+
+    // Determine the image source
+    const gunTypeName = gunType.toLowerCase() + "_dark";
+    const imageSrc =
+      gunData[skin]["fullRender"] ||
+      gunData[skin]["displayIcon"] ||
+      `/static/images/${gunTypeName}.png`;
+
     skinCard.innerHTML = `
-      <img src="${gunData[skin]["displayIcon"]}" alt="${gunData[skin]["displayName"]}" class="skin-image">
+      <img src="${imageSrc}" alt="${gunData[skin]["displayName"]}" class="skin-image">
       <p>${gunData[skin]["displayName"]}</p>
     `;
 
@@ -44,6 +62,7 @@ function displayGunDetails(gunData) {
 function showSkinDetails(skin) {
   clearVideo();
   const skinDetailsContainer = document.getElementById("skin-details");
+  // If the given skin does not have a fullRender or displayIcon, need to use placeholder
   skinDetailsContainer.innerHTML = `
     <h2>${skin["displayName"]}</h2>
     <img src="${skin["fullRender"] || skin["displayIcon"]}" alt="${
@@ -144,5 +163,19 @@ function clearVideo() {
   const videoContainer = document.getElementById("video-container");
   videoContainer.innerHTML = ""; // Clears the video when mouse leaves
 }
+
+function clearLocalStorage() {
+  localStorage.clear();
+}
+
+document.getElementById("refresh-button").addEventListener("click", () => {
+  clearLocalStorage();
+  fetchGunDetails(); // Refetch the data
+});
+
+// Simple home page button functionality
+document.getElementById("home-button").addEventListener("click", () => {
+  window.location.href = "/";
+});
 
 fetchGunDetails();

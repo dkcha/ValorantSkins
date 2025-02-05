@@ -31,4 +31,13 @@ function populateGunGrid(gunsData) {
   }
 }
 
+document.getElementById("refresh-button").addEventListener("click", () => {
+  clearLocalStorage();
+  fetchGunDetails(); // Refetch the data
+});
+
+function clearLocalStorage() {
+  localStorage.clear();
+}
+
 fetchGuns();

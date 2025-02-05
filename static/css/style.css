@@ -130,6 +130,10 @@ body {
   background-color: #3f3f3f;
 }
 
+#skin-details {
+  border: 2px solid rgb(65, 127, 129);
+}
+
 video {
   border: 2px solid white;
   border-radius: 8px;
@@ -163,4 +167,18 @@ video {
 
 #home-button:hover {
   background-color: #0056b3;
+}
+
+#refresh-button {
+  background-color: rgb(93, 161, 116);
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#refresh-button:hover {
+  background-color: rgb(116, 255, 163);
 }
