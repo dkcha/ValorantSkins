@@ -130,13 +130,32 @@ body {
   background-color: #3f3f3f;
 }
 
+/* Container for each skin when selected that displays levels & chromas */
 #skin-details {
   border: 2px solid rgb(65, 127, 129);
+  width: 800px; /* Increase the width */
+  height: auto; /* Allow height to grow based on content */
+  min-height: 400px; /* Set a minimum height to avoid collapsing */
+  padding: 20px; /* Add padding inside the container */
+  background-color: #1e1e1e; /* Match your theme */
+  border-radius: 8px; /* Optional: Add rounded corners */
+  border: 1px solid #ccc; /* Optional: Add a border */
+  margin: 20px auto; /* Center the container */
+  display: none; /* Hide the container initially */
 }
 
-video {
-  border: 2px solid white;
-  border-radius: 8px;
+#skin-details.visible {
+  display: block; /* Show the container when the "visible" class is added */
+}
+
+#chromaContainer,
+#levelContainer {
+  margin-bottom: 20px; /* Add spacing between sections */
+}
+
+#chromaContainer h3,
+#levelContainer h3 {
+  margin-bottom: 10px; /* Add spacing below the headings */
 }
 
 .hover-item {
@@ -153,6 +172,75 @@ video {
   background-color: rgb(65, 127, 129);
   color: rgb(176, 253, 240);
   font-weight: bold;
+}
+
+/* Chroma styling */
+.chroma-item {
+  display: inline-block;
+  position: relative;
+  margin: 5px;
+  cursor: pointer;
+}
+
+.chroma-swatch {
+  width: 50px; /* Adjust the size of the swatch */
+  height: 50px;
+  border-radius: 4px; /* Optional: Add rounded corners */
+  border: 1px solid #ccc; /* Optional: Add a border */
+  object-fit: cover; /* Ensure the image fits within the container */
+}
+
+.chroma-text {
+  display: none; /* Hide text by default */
+  position: absolute;
+  bottom: -20px; /* Position the text below the swatch */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+  color: white;
+  padding: 5px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap; /* Prevent text from wrapping */
+}
+
+.chroma-item:hover .chroma-text {
+  display: block; /* Show text on hover */
+}
+
+/* Optional: Add a background highlight instead of a border */
+.chroma-item.selected {
+  border: 3px solid rgb(65, 127, 129); /* Green border for selected chroma */
+  border-radius: 4px; /* Optional: Add rounded corners */
+}
+
+/* Adjusts horizontal list to be a fixed size */
+.skin-image {
+  width: 100px; /* Set the desired width */
+  height: auto; /* Maintain aspect ratio */
+  border-radius: 4px; /* Optional: Add rounded corners */
+  object-fit: cover; /* Ensure the image covers the area without stretching */
+}
+
+#skin-container {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px; /* Add spacing between items */
+  padding: 10px; /* Add padding inside the container */
+}
+
+.skin-card {
+  flex: 0 0 auto; /* Ensure the cards don't shrink or grow */
+  text-align: center; /* Center the text below the image */
+}
+
+.skin-card p {
+  margin-top: 5px; /* Add some space between the image and the text */
+}
+
+video {
+  border: 2px solid white;
+  border-radius: 8px;
 }
 
 #home-button {

@@ -7,14 +7,6 @@ async function fetchGunDetails() {
     return;
   }
 
-  // try {
-  //   const response = await fetch(`/api/gun/skins/${gunType}`);
-  //   const gunData = await response.json();
-  //   displayGunDetails(gunData);
-  // } catch (error) {
-  //   console.error("Error fetching gun details:", error);
-  // }
-
   // Check local storage first
   const cachedData = localStorage.getItem(gunType);
   if (cachedData) {
@@ -40,12 +32,10 @@ function displayGunDetails(gunData, gunType) {
     const skinCard = document.createElement("div");
     skinCard.className = "skin-card";
 
-    // Determine the image source
+    // Determine the image source (removed "fullRender" to have images smaller)
     const gunTypeName = gunType.toLowerCase() + "_dark";
     const imageSrc =
-      gunData[skin]["fullRender"] ||
-      gunData[skin]["displayIcon"] ||
-      `/static/images/${gunTypeName}.png`;
+      gunData[skin]["displayIcon"] || `/static/images/${gunTypeName}.png`;
 
     skinCard.innerHTML = `
       <img src="${imageSrc}" alt="${gunData[skin]["displayName"]}" class="skin-image">
@@ -53,21 +43,32 @@ function displayGunDetails(gunData, gunType) {
     `;
 
     // Handle skin click
-    skinCard.addEventListener("click", () => showSkinDetails(gunData[skin]));
+    skinCard.addEventListener("click", () =>
+      showSkinDetails(gunData[skin], gunType)
+    );
     skinContainer.appendChild(skinCard);
   }
 }
 
+// Track currently selected chroma for highlighting purposes
+let selectedChroma = null;
+
 // only create button if there's a streamed video that exists for it, and make it hover instead of click
-function showSkinDetails(skin) {
+function showSkinDetails(skin, gunType) {
   clearVideo();
   const skinDetailsContainer = document.getElementById("skin-details");
-  // If the given skin does not have a fullRender or displayIcon, need to use placeholder
+
+  // Show the container
+  skinDetailsContainer.classList.add("visible");
+
+  // Populate the container with skin details
   skinDetailsContainer.innerHTML = `
     <h2>${skin["displayName"]}</h2>
-    <img src="${skin["fullRender"] || skin["displayIcon"]}" alt="${
-    skin["displayName"]
-  }">
+    <img src="${
+      skin["fullRender"] ||
+      skin["displayIcon"] ||
+      `/static/images/${gunType.toLowerCase()}_dark.png`
+    }" alt="${skin["displayName"]}">
   `;
 
   const chromaContainer = document.createElement("div");
@@ -79,27 +80,58 @@ function showSkinDetails(skin) {
   chromaContainer.innerHTML = "<h3>Chromas:</h3>";
   levelContainer.innerHTML = "<h3>Levels:</h3>";
 
-  // Create hover div for chromas
   let anyChroma = false;
   skin["chromas"]?.forEach((chroma) => {
     if (chroma["streamedVideo"]) {
       const chromaDiv = document.createElement("div");
-      chromaDiv.className = "hover-item";
-      chromaDiv.textContent = chroma["displayName"];
-      chromaDiv.src = chroma["displayIcon"];
+      chromaDiv.className = "chroma-item";
+
+      // Create an image element for the swatch
+      const swatchImage = document.createElement("img");
+      swatchImage.src = chroma["swatch"] || "/static/images/default_swatch.png"; // Fallback image if swatch is missing
+      swatchImage.alt = chroma["displayName"];
+      swatchImage.className = "chroma-swatch";
+
+      // Create a text element for the chroma name
+      const chromaText = document.createElement("div");
+      chromaText.textContent = chroma["displayName"];
+      chromaText.className = "chroma-text";
+
+      // Append the image and text to the chromaDiv
+      chromaDiv.appendChild(swatchImage);
+      chromaDiv.appendChild(chromaText);
+
+      // Handle hover events
       chromaDiv.addEventListener("mouseover", () => {
-        displayStreamedVideo(chroma["streamedVideo"]);
-        //chromaDiv.addEventListener("mouseout", clearVideo);
+        chromaText.style.display = "block"; // Show text on hover
       });
+
+      chromaDiv.addEventListener("mouseout", () => {
+        chromaText.style.display = "none"; // Hide text on mouseout
+      });
+
+      // Handle click to select the chroma and display the streamed video
+      chromaDiv.addEventListener("click", () => {
+        // Remove highlight from the previously selected chroma
+        if (selectedChroma) {
+          selectedChroma.classList.remove("selected");
+        }
+
+        // Highlight the clicked chroma
+        chromaDiv.classList.add("selected");
+        selectedChroma = chromaDiv;
+
+        // Display the streamed video
+        displayStreamedVideo(chroma["streamedVideo"]);
+      });
+
       chromaContainer.appendChild(chromaDiv);
       anyChroma = true;
     }
   });
 
   if (!anyChroma) {
-    // Clear all HTML if no streamed videos
-    console.log("Clearing all innerHtml Chroma why");
-    chromaContainer.innerHTML = "";
+    chromaContainer.innerHTML = "<h3>Chromas:</h3><p>No chromas available.</p>";
   }
 
   // Create hover div for levels
@@ -123,7 +155,6 @@ function showSkinDetails(skin) {
       levelDiv.src = level["displayIcon"];
       levelDiv.addEventListener("mouseover", () => {
         displayStreamedVideo(level["streamedVideo"]);
-        //levelDiv.addEventListener("mouseout", clearVideo);
       });
       levelContainer.appendChild(levelDiv);
       anyLevel = true;
@@ -132,8 +163,7 @@ function showSkinDetails(skin) {
   });
 
   if (!anyLevel) {
-    // Clear all HTML if no streamed videos
-    levelContainer.innerHTML = "";
+    levelContainer.innerHTML = "<h3>Levels:</h3><p>No levels available.</p>";
   }
 
   skinDetailsContainer.appendChild(chromaContainer);
