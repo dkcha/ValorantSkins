@@ -136,6 +136,12 @@ function showSkinDetails(skin, gunType) {
           selectedChroma.classList.remove("selected");
         }
 
+        // Remove highlight from the previously selected level
+        if (selectedLevel) {
+          selectedLevel.classList.remove("selected");
+          selectedLevel = null; // Clear the selected level
+        }
+
         // Highlight the clicked chroma
         chromaDiv.classList.add("selected");
         selectedChroma = chromaDiv;
@@ -178,6 +184,7 @@ function showSkinDetails(skin, gunType) {
       levelDiv.className = "level-item";
       let text = "";
 
+      // Grab text from skin data with some edge cases
       if (level["levelItem"]) {
         text = level["levelItem"].split("::")[1];
         if (text == "SoundEffects") {
@@ -187,15 +194,14 @@ function showSkinDetails(skin, gunType) {
         text = "Base";
       }
 
-      levelDiv.src = level["displayIcon"];
+      // not sure if this does anything
+      //levelDiv.src = level["displayIcon"];
 
       // Create a text element for the level name
       levelDiv.innerHTML = "Level " + levelNum;
       const levelText = document.createElement("div");
       levelText.textContent = text;
       levelText.className = "level-text";
-
-      console.log("text: " + text);
 
       // Append the text to the levelDiv
       levelDiv.appendChild(levelText);
@@ -205,10 +211,24 @@ function showSkinDetails(skin, gunType) {
         levelText.style.display = "block"; // Show text on hover
       });
 
+      levelDiv.addEventListener("mouseout", () => {
+        levelText.style.display = "none";
+        skinVideo.style.display = "none";
+        skinImage.style.display = "block";
+        skinVideo.pause(); // Pause the video
+        skinVideo.currentTime = 0; // Reset the video to the beginning
+      });
+
       levelDiv.addEventListener("click", () => {
         // Remove highlight from the previously selected chroma
         if (selectedLevel) {
           selectedLevel.classList.remove("selected");
+        }
+
+        // Remove highlight from the previously selected chroma
+        if (selectedChroma) {
+          selectedChroma.classList.remove("selected");
+          selectedChroma = null; // Clear the selected chroma
         }
 
         // Highlight the clicked chroma
@@ -219,14 +239,6 @@ function showSkinDetails(skin, gunType) {
         skinVideo.style.display = "block";
         skinImage.style.display = "none";
         skinVideo.play(); // Start playing the video
-      });
-
-      levelDiv.addEventListener("mouseout", () => {
-        levelText.style.display = "none";
-        skinVideo.style.display = "none";
-        skinImage.style.display = "block";
-        skinVideo.pause(); // Pause the video
-        skinVideo.currentTime = 0; // Reset the video to the beginning
       });
 
       levelContainer.appendChild(levelDiv);
