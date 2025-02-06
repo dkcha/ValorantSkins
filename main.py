@@ -7,20 +7,10 @@ uuid = {}
 
 """
     TODO
-    - Group skins by gun ** dict: { 
-                                'Stinger': { 
-                                    uuid: {
-                                        ... 
-                                    },
-                                    uuid: {
-                                        ...
-                                    }
-                                }
-                                
-    - Make container bigger for skin to show streamed video
-    - Carousel style viewing of available skins per gun group
-        - Display image should only show for carousel style
-    - Add streamed videos when clicked on / viewed
+    - change index.html to be formatted like Valorant-style, grid and in its order
+    - certain skins (Game Over Sheriff) doesn't have displayIcon/fullRender but only within
+        its nested chroma/levels. Need to find a workaround to display the skin in this case.
+        Should only use {gunType}_dark only if there is no image mapped to the given skin.
 """
 
 def load_skins():

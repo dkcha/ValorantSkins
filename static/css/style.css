@@ -158,22 +158,6 @@ body {
   margin-bottom: 10px; /* Add spacing below the headings */
 }
 
-.hover-item {
-  display: inline-block;
-  padding: 10px;
-  margin: 5px;
-  background-color: rgb(65, 127, 129);
-  color: rgb(176, 253, 240);
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.hover-item:hover {
-  background-color: rgb(65, 127, 129);
-  color: rgb(176, 253, 240);
-  font-weight: bold;
-}
-
 /* Chroma styling */
 .chroma-item {
   display: inline-block;
@@ -208,8 +192,45 @@ body {
   display: block; /* Show text on hover */
 }
 
+.level-text {
+  display: none; /* Hide text by default */
+  position: absolute;
+  bottom: -20px; /* Position the text below the level div */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+  color: white;
+  padding: 5px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap; /* Prevent text from wrapping */
+}
+
+.level-item:hover .level-text {
+  display: block; /* Show text on hover */
+  background-color: rgb(65, 127, 129);
+  color: rgb(176, 253, 240);
+  font-weight: bold;
+}
+
+.level-item {
+  display: inline-block;
+  padding: 10px;
+  margin: 5px;
+  background-color: rgb(65, 127, 129);
+  color: rgb(176, 253, 240);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
 /* Optional: Add a background highlight instead of a border */
 .chroma-item.selected {
+  border: 3px solid rgb(65, 127, 129); /* Green border for selected chroma */
+  border-radius: 4px; /* Optional: Add rounded corners */
+}
+
+/* Optional: Add a background highlight instead of a border */
+.level-item.selected {
   border: 3px solid rgb(65, 127, 129); /* Green border for selected chroma */
   border-radius: 4px; /* Optional: Add rounded corners */
 }

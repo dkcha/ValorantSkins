@@ -32,10 +32,23 @@ function displayGunDetails(gunData, gunType) {
     const skinCard = document.createElement("div");
     skinCard.className = "skin-card";
 
-    // Determine the image source (removed "fullRender" to have images smaller)
+    // Determine the image source
+    let imageSrc = "";
+    // Check to see if chromas exist and has any image
+    if (isNotEmptyArray(gunData[skin]["chromas"])) {
+      imageSrc =
+        gunData[skin]["chromas"][0]["displayIcon"] ||
+        gunData[skin]["chromas"][0]["fullRender"];
+    }
+    // Check to see if levels exist and has any image
+    if (!imageSrc && isNotEmptyArray(gunData[skins]["levels"])) {
+      imageSrc = gunData[skins]["levels"][0]["displayIcon"];
+    }
     const gunTypeName = gunType.toLowerCase() + "_dark";
-    const imageSrc =
-      gunData[skin]["displayIcon"] || `/static/images/${gunTypeName}.png`;
+    imageSrc =
+      gunData[skin]["displayIcon"] ||
+      imageSrc ||
+      `/static/images/${gunTypeName}.png`;
 
     skinCard.innerHTML = `
       <img src="${imageSrc}" alt="${gunData[skin]["displayName"]}" class="skin-image">
@@ -50,10 +63,12 @@ function displayGunDetails(gunData, gunType) {
   }
 }
 
-// Track currently selected chroma for highlighting purposes
+// Track currently selected chroma/level for highlighting purposes
 let selectedChroma = null;
+let selectedLevel = null;
 
-// todo: replace image of gun in skin-details with streamedVideo (if exists otherwise leave alone)
+// todo: skins like Game Over sheriff doesn't have a displayIcon or fullRender, but only within its nested chroma/level
+// need to find a workaround to have that be displayed in the skin-details container within skin-card
 function showSkinDetails(skin, gunType) {
   const skinDetailsContainer = document.getElementById("skin-details");
   const mediaContainer = document.getElementById("media-container");
@@ -82,67 +97,69 @@ function showSkinDetails(skin, gunType) {
 
   let anyChroma = false;
   skin["chromas"]?.forEach((chroma) => {
-    const chromaDiv = document.createElement("div");
-    chromaDiv.className = "chroma-item";
+    if (chroma["swatch"]) {
+      const chromaDiv = document.createElement("div");
+      chromaDiv.className = "chroma-item";
 
-    // Create an image element for the swatch
-    const swatchImage = document.createElement("img");
-    swatchImage.src = chroma["swatch"] || "/static/images/default_swatch.png"; // Fallback image if swatch is missing
-    swatchImage.alt = chroma["displayName"];
-    swatchImage.className = "chroma-swatch";
+      // Create an image element for the swatch
+      const swatchImage = document.createElement("img");
+      swatchImage.src = chroma["swatch"] || "/static/images/default_swatch.png"; // Fallback image if swatch is missing
+      swatchImage.alt = chroma["displayName"];
+      swatchImage.className = "chroma-swatch";
 
-    // Create a text element for the chroma name
-    const chromaText = document.createElement("div");
-    chromaText.textContent = chroma["displayName"];
-    chromaText.className = "chroma-text";
+      // Create a text element for the chroma name
+      const chromaText = document.createElement("div");
+      chromaText.textContent = chroma["displayName"];
+      chromaText.className = "chroma-text";
 
-    // Append the image and text to the chromaDiv
-    chromaDiv.appendChild(swatchImage);
-    chromaDiv.appendChild(chromaText);
+      // Append the image and text to the chromaDiv
+      chromaDiv.appendChild(swatchImage);
+      chromaDiv.appendChild(chromaText);
 
-    // Handle hover events
-    chromaDiv.addEventListener("mouseover", () => {
-      chromaText.style.display = "block"; // Show text on hover
-    });
+      // Handle hover events
+      chromaDiv.addEventListener("mouseover", () => {
+        chromaText.style.display = "block"; // Show text on hover
+      });
 
-    chromaDiv.addEventListener("mouseout", () => {
-      chromaText.style.display = "none"; // Hide text on mouseout
-      skinVideo.style.display = "none";
-      skinImage.style.display = "block";
-      skinVideo.pause(); // Pause the video
-      skinVideo.currentTime = 0; // Reset the video to the beginning
-    });
-
-    // Handle click to highlight the chroma
-    chromaDiv.addEventListener("click", () => {
-      // Remove highlight from the previously selected chroma
-      if (selectedChroma) {
-        selectedChroma.classList.remove("selected");
-      }
-
-      // Highlight the clicked chroma
-      chromaDiv.classList.add("selected");
-      selectedChroma = chromaDiv;
-
-      if (chroma["streamedVideo"]) {
-        // If the chroma has a streamed video, display it
-        skinVideo.src = chroma["streamedVideo"];
-        skinVideo.style.display = "block";
-        skinImage.style.display = "none";
-        skinVideo.play(); // Start playing the video
-      } else {
-        // If the chroma doesn't have a streamed video, display the skin's displayIcon or fullRender
-        skinImage.src =
-          chroma["displayIcon"] ||
-          chroma["fullRender"] ||
-          `/static/images/${gunType.toLowerCase()}_dark.png`;
-        skinImage.style.display = "block";
+      chromaDiv.addEventListener("mouseout", () => {
+        chromaText.style.display = "none"; // Hide text on mouseout
         skinVideo.style.display = "none";
-      }
-    });
+        skinImage.style.display = "block";
+        skinVideo.pause(); // Pause the video
+        skinVideo.currentTime = 0; // Reset the video to the beginning
+      });
 
-    chromaContainer.appendChild(chromaDiv);
-    anyChroma = true;
+      // Handle click to highlight the chroma
+      chromaDiv.addEventListener("click", () => {
+        // Remove highlight from the previously selected chroma
+        if (selectedChroma) {
+          selectedChroma.classList.remove("selected");
+        }
+
+        // Highlight the clicked chroma
+        chromaDiv.classList.add("selected");
+        selectedChroma = chromaDiv;
+
+        if (chroma["streamedVideo"]) {
+          // If the chroma has a streamed video, display it
+          skinVideo.src = chroma["streamedVideo"];
+          skinVideo.style.display = "block";
+          skinImage.style.display = "none";
+          skinVideo.play(); // Start playing the video
+        } else {
+          // If the chroma doesn't have a streamed video, display the skin's displayIcon or fullRender
+          skinImage.src =
+            chroma["displayIcon"] ||
+            chroma["fullRender"] ||
+            `/static/images/${gunType.toLowerCase()}_dark.png`;
+          skinImage.style.display = "block";
+          skinVideo.style.display = "none";
+        }
+      });
+
+      chromaContainer.appendChild(chromaDiv);
+      anyChroma = true;
+    }
   });
 
   if (!anyChroma) {
@@ -158,21 +175,46 @@ function showSkinDetails(skin, gunType) {
   skin["levels"]?.forEach((level) => {
     if (level["streamedVideo"]) {
       const levelDiv = document.createElement("div");
-      levelDiv.className = "hover-item";
+      levelDiv.className = "level-item";
+      let text = "";
 
       if (level["levelItem"]) {
-        let text = level["levelItem"].split("::")[1];
+        text = level["levelItem"].split("::")[1];
         if (text == "SoundEffects") {
           text = "Sound Effects";
         }
-        levelDiv.innerHTML = "Level " + levelNum + "<br>" + text;
       } else {
-        levelDiv.innerHTML = "Level " + levelNum + "<br>Base";
+        text = "Base";
       }
+
       levelDiv.src = level["displayIcon"];
+
+      // Create a text element for the level name
+      levelDiv.innerHTML = "Level " + levelNum;
+      const levelText = document.createElement("div");
+      levelText.textContent = text;
+      levelText.className = "level-text";
+
+      console.log("text: " + text);
+
+      // Append the text to the levelDiv
+      levelDiv.appendChild(levelText);
 
       // Handle hover events
       levelDiv.addEventListener("mouseover", () => {
+        levelText.style.display = "block"; // Show text on hover
+      });
+
+      levelDiv.addEventListener("click", () => {
+        // Remove highlight from the previously selected chroma
+        if (selectedLevel) {
+          selectedLevel.classList.remove("selected");
+        }
+
+        // Highlight the clicked chroma
+        levelDiv.classList.add("selected");
+        selectedLevel = levelDiv;
+
         skinVideo.src = level["streamedVideo"];
         skinVideo.style.display = "block";
         skinImage.style.display = "none";
@@ -180,6 +222,7 @@ function showSkinDetails(skin, gunType) {
       });
 
       levelDiv.addEventListener("mouseout", () => {
+        levelText.style.display = "none";
         skinVideo.style.display = "none";
         skinImage.style.display = "block";
         skinVideo.pause(); // Pause the video
@@ -293,6 +336,10 @@ muteButton.addEventListener("click", () => {
     volumeSlider.value = volume;
   }
 });
+
+function isNotEmptyArray(arr) {
+  return Array.isArray(arr) && arr.length > 0;
+}
 
 // Fetch and load gun skin data
 fetchGunDetails();

@@ -1,3 +1,4 @@
+// todo: need to reorganize home page so it's a grid based on Valorant styling and format
 async function fetchGuns() {
   try {
     const response = await fetch("/api/skins");
