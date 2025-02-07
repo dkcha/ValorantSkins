@@ -148,6 +148,17 @@ body {
   display: block; /* Show the container when the "visible" class is added */
 }
 
+#skinNameContainer {
+  text-align: center; /* Center the text horizontally */
+  font-size: 24px; /* Adjust the font size */
+  font-weight: bold; /* Make the text bold */
+  margin-bottom: 20px; /* Add spacing below the title */
+  color: white; /* Set the text color */
+  padding: 10px; /* Add padding for better spacing */
+  border: 1px solid #fff;
+  border-radius: 8px; /* Optional: Add rounded corners */
+}
+
 #chromaContainer,
 #levelContainer {
   margin-bottom: 20px; /* Add spacing between sections */
@@ -207,9 +218,11 @@ body {
 
 /* Optional: Add a background highlight instead of a border */
 .chroma-item.selected,
-.level-item.selected {
+.level-item.selected,
+.skin-card.selected {
   border: 3px solid rgb(170, 239, 241); /* Green border for selected chroma */
   border-radius: 4px; /* Optional: Add rounded corners */
+  font-weight: bold;
 }
 
 /* Adjusts horizontal list to be a fixed size */

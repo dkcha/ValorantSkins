@@ -1,3 +1,4 @@
+// Fetch and load gun details from API or local storage
 async function fetchGunDetails() {
   const params = new URLSearchParams(window.location.search);
   const gunType = params.get("type");
@@ -23,7 +24,9 @@ async function fetchGunDetails() {
   }
 }
 
-// todo: some skins like Game Over Sheriff have their displayIcon/fullRender nested inside levels/chromas
+// Displays guns in horizontal list, track selected skin to highlight for clarity
+let selectedSkin = null;
+
 function displayGunDetails(gunData, gunType) {
   const skinContainer = document.getElementById("skin-container");
   skinContainer.innerHTML = "";
@@ -41,7 +44,7 @@ function displayGunDetails(gunData, gunType) {
         gunData[skin]["chromas"][0]["fullRender"];
     }
     // Check to see if levels exist and has any image
-    if (!imageSrc && isNotEmptyArray(gunData[skins]["levels"])) {
+    if (!imageSrc && isNotEmptyArray(gunData[skin]["levels"])) {
       imageSrc = gunData[skins]["levels"][0]["displayIcon"];
     }
     const gunTypeName = gunType.toLowerCase() + "_dark";
@@ -50,15 +53,32 @@ function displayGunDetails(gunData, gunType) {
       imageSrc ||
       `/static/images/${gunTypeName}.png`;
 
+    // If given skin is the standard, default skin (e.g. Standard Guardian), use asset image
+    if (
+      gunData[skin]["displayName"].startsWith("Standard") &&
+      gunData[skin]["displayName"].split(" ").length == 2
+    ) {
+      imageSrc = `/static/images/${gunType.toLowerCase()}.png`;
+    }
+
+    // <p>${gunData[skin]["displayName"]}</p> (added within skinCard.innerHTML for skin name in list)
     skinCard.innerHTML = `
       <img src="${imageSrc}" alt="${gunData[skin]["displayName"]}" class="skin-image">
-      <p>${gunData[skin]["displayName"]}</p>
     `;
 
     // Handle skin click
-    skinCard.addEventListener("click", () =>
-      showSkinDetails(gunData[skin], gunType)
-    );
+    skinCard.addEventListener("click", () => {
+      // Remove highlight from the previously selected level
+      if (selectedSkin) {
+        selectedSkin.classList.remove("selected");
+        selectedSkin = null; // Clear the selected level
+      }
+
+      // Highlight the clicked chroma
+      skinCard.classList.add("selected");
+      selectedSkin = skinCard;
+      showSkinDetails(gunData[skin], gunType, imageSrc);
+    });
     skinContainer.appendChild(skinCard);
   }
 }
@@ -67,11 +87,10 @@ function displayGunDetails(gunData, gunType) {
 let selectedChroma = null;
 let selectedLevel = null;
 
-// todo: skins like Game Over sheriff doesn't have a displayIcon or fullRender, but only within its nested chroma/level
-// need to find a workaround to have that be displayed in the skin-details container within skin-card
-function showSkinDetails(skin, gunType) {
+// Display skin details in window when selected from horizontal list
+function showSkinDetails(skin, gunType, imageSrc) {
   const skinDetailsContainer = document.getElementById("skin-details");
-  const mediaContainer = document.getElementById("media-container");
+  //const mediaContainer = document.getElementById("media-container");
   const skinVideo = document.getElementById("skin-video");
   const skinImage = document.getElementById("skin-image");
 
@@ -84,11 +103,24 @@ function showSkinDetails(skin, gunType) {
   skinVideo.src = "";
   skinImage.src = "";
 
+  const skinNameContainer = document.getElementById("skinNameContainer");
+  skinNameContainer.textContent = skin["displayName"];
+
+  //skinDetailsContainer.appendChild(skinNameContainer);
+
   // Display the skin image (displayIcon or fullRender)
-  skinImage.src =
-    skin["displayIcon"] ||
-    skin["fullRender"] ||
-    `/static/images/${gunType.toLowerCase()}_dark.png`;
+  if (
+    skin["displayName"].startsWith("Standard") &&
+    skin["displayName"].split(" ").length == 2
+  ) {
+    skinImage.src = `/static/images/${gunType.toLowerCase()}.png`;
+  } else {
+    skinImage.src =
+      imageSrc ||
+      skin["displayIcon"] ||
+      skin["fullRender"] ||
+      `/static/images/${gunType.toLowerCase()}_dark.png`;
+  }
   skinImage.style.display = "block";
 
   // Populate chromas
@@ -194,11 +226,8 @@ function showSkinDetails(skin, gunType) {
         text = "Base";
       }
 
-      // not sure if this does anything
-      //levelDiv.src = level["displayIcon"];
-
       // Create a text element for the level name
-      levelDiv.innerHTML = "Level " + levelNum;
+      levelDiv.innerHTML = "LEVEL " + levelNum;
       const levelText = document.createElement("div");
       levelText.textContent = text;
       levelText.className = "level-text";
