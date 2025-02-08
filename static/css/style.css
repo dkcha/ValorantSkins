@@ -312,6 +312,44 @@ video {
   background-color: #0056b3;
 }
 
+/* Search bar styling */
+#search-container {
+  margin-bottom: 20px; /* Add spacing below the search bar */
+  position: relative; /* Ensure the search results are positioned relative to the container */
+}
+
+#search-bar {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+#search-results {
+  position: absolute;
+  top: 100%; /* Position the results below the search bar */
+  left: 0;
+  width: 100%;
+  max-height: 200px; /* Limit the height of the results dropdown */
+  overflow-y: auto; /* Add scroll if there are too many results */
+  background-color: #1e1e1e; /* Match your theme */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  z-index: 10; /* Ensure the dropdown appears above other elements */
+  display: none; /* Hide the results by default */
+}
+
+#search-results div {
+  padding: 10px;
+  cursor: pointer;
+  color: white; /* Match your theme */
+}
+
+#search-results div:hover {
+  background-color: #3f3f3f; /* Highlight on hover */
+}
+
 #home-button {
   background-color: #007bff;
   color: white;

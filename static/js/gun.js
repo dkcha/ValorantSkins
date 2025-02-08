@@ -1,8 +1,11 @@
+// Skin data for weapons
+data = {};
+// Get the current gun type from the URL
+const params = new URLSearchParams(window.location.search);
+const gunType = params.get("type");
+
 // Fetch and load gun details from API or local storage
 async function fetchGunDetails() {
-  const params = new URLSearchParams(window.location.search);
-  const gunType = params.get("type");
-
   if (!gunType) {
     console.error("No gun type specified");
     return;
@@ -11,12 +14,14 @@ async function fetchGunDetails() {
   // Check local storage first
   const cachedData = localStorage.getItem(gunType);
   if (cachedData) {
-    displayGunDetails(JSON.parse(cachedData), gunType);
+    data = JSON.parse(cachedData);
+    displayGunDetails(data, gunType);
   } else {
     try {
       const response = await fetch(`/api/gun/skins/${gunType}`);
       const gunData = await response.json();
       localStorage.setItem(gunType, JSON.stringify(gunData)); // Cache the data
+      data = gunData;
       displayGunDetails(gunData, gunType);
     } catch (error) {
       console.error("Error fetching gun details:", error);
@@ -27,43 +32,54 @@ async function fetchGunDetails() {
 // Displays guns in horizontal list, track selected skin to highlight for clarity
 let selectedSkin = null;
 
+function findImageSource(skin, gunType) {
+  // Determine the image source
+  let imageSrc = "";
+
+  // Check to see if chromas exist and has any image
+  if (isNotEmptyArray(skin["chromas"])) {
+    imageSrc =
+      skin["chromas"][0]["displayIcon"] || skin["chromas"][0]["fullRender"];
+  }
+
+  // Check to see if levels exist and has any image
+  if (!imageSrc && isNotEmptyArray(skin["levels"])) {
+    imageSrc = skin["levels"][0]["displayIcon"];
+  }
+
+  const gunTypeName = gunType.toLowerCase() + "_dark";
+  imageSrc =
+    skin["displayIcon"] || imageSrc || `/static/images/${gunTypeName}.png`;
+
+  return imageSrc;
+}
+
 function displayGunDetails(gunData, gunType) {
   const skinContainer = document.getElementById("skin-container");
   skinContainer.innerHTML = "";
 
-  for (let skin in gunData) {
+  for (let displayName in gunData) {
+    // Skin is drilled down version of data[gunType][...]
+    const skin = gunData[displayName];
+
     const skinCard = document.createElement("div");
     skinCard.className = "skin-card";
 
     // Determine the image source
-    let imageSrc = "";
-    // Check to see if chromas exist and has any image
-    if (isNotEmptyArray(gunData[skin]["chromas"])) {
-      imageSrc =
-        gunData[skin]["chromas"][0]["displayIcon"] ||
-        gunData[skin]["chromas"][0]["fullRender"];
-    }
-    // Check to see if levels exist and has any image
-    if (!imageSrc && isNotEmptyArray(gunData[skin]["levels"])) {
-      imageSrc = gunData[skins]["levels"][0]["displayIcon"];
-    }
-    const gunTypeName = gunType.toLowerCase() + "_dark";
-    imageSrc =
-      gunData[skin]["displayIcon"] ||
-      imageSrc ||
-      `/static/images/${gunTypeName}.png`;
+    let imageSrc = findImageSource(skin, gunType);
 
     // If given skin is the standard, default skin (e.g. Standard Guardian), use asset image
     if (
-      gunData[skin]["displayName"].startsWith("Standard") &&
-      gunData[skin]["displayName"].split(" ").length == 2
+      displayName.startsWith("Standard") &&
+      displayName.split(" ").length == 2
     ) {
       imageSrc = `/static/images/${gunType.toLowerCase()}.png`;
     }
 
     // <p>${gunData[skin]["displayName"]}</p> (added within skinCard.innerHTML for skin name in list)
     skinCard.innerHTML = `
-      <img src="${imageSrc}" alt="${gunData[skin]["displayName"]}" class="skin-image">
+      <img src="${imageSrc}" alt="${displayName}" class="skin-image">
+      <p>${displayName}</p>
     `;
 
     // Handle skin click
@@ -77,7 +93,7 @@ function displayGunDetails(gunData, gunType) {
       // Highlight the clicked chroma
       skinCard.classList.add("selected");
       selectedSkin = skinCard;
-      showSkinDetails(gunData[skin], gunType, imageSrc);
+      showSkinDetails(skin, gunType, imageSrc);
     });
     skinContainer.appendChild(skinCard);
   }
@@ -105,8 +121,6 @@ function showSkinDetails(skin, gunType, imageSrc) {
 
   const skinNameContainer = document.getElementById("skinNameContainer");
   skinNameContainer.textContent = skin["displayName"];
-
-  //skinDetailsContainer.appendChild(skinNameContainer);
 
   // Display the skin image (displayIcon or fullRender)
   if (
@@ -381,6 +395,94 @@ muteButton.addEventListener("click", () => {
 function isNotEmptyArray(arr) {
   return Array.isArray(arr) && arr.length > 0;
 }
+
+// Get the search bar and results container
+const searchBar = document.getElementById("search-bar");
+const searchResults = document.getElementById("search-results");
+
+// Function to filter skins based on the search input
+function filterSkins(searchTerm) {
+  const results = [];
+
+  // data stores all the skins for the current gun type based on the page
+  for (let displayName in data) {
+    if (displayName.toLowerCase().includes(searchTerm.toLowerCase())) {
+      results.push(displayName);
+    }
+  }
+
+  return results;
+}
+
+// Function to display search results
+function displaySearchResults(results) {
+  searchResults.innerHTML = ""; // Clear previous results
+
+  if (results.length === 0) {
+    searchResults.style.display = "none"; // Hide the results if there are none
+    return;
+  }
+
+  results.forEach((displayName) => {
+    const resultDiv = document.createElement("div");
+    resultDiv.textContent = displayName;
+
+    // Handle click on a search result
+    resultDiv.addEventListener("click", () => {
+      // Find the corresponding skin card in the horizontal list
+      const skinCards = document.querySelectorAll(".skin-card");
+      skinCards.forEach((skinCard) => {
+        if (skinCard.querySelector("p").textContent === displayName) {
+          // Highlight the selected skin card
+          skinCard.classList.add("selected");
+
+          // Scroll the horizontal list to the selected skin card
+          skinCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+          // Show the skin details
+          const skin = data[displayName];
+          // this needs imageSrc, maybe add a field to data[gunType][displayName][imageSrc]?
+          const imageSrc = findImageSource(skin, gunType);
+          showSkinDetails(skin, gunType, imageSrc);
+        } else {
+          // Remove highlight from other skin cards
+          skinCard.classList.remove("selected");
+        }
+      });
+
+      // Clear the search bar and hide the results
+      searchBar.value = "";
+      searchResults.style.display = "none";
+    });
+
+    searchResults.appendChild(resultDiv);
+  });
+
+  searchResults.style.display = "block"; // Show the results
+}
+
+// Add an event listener to the search bar
+searchBar.addEventListener("input", () => {
+  const searchTerm = searchBar.value.trim();
+
+  if (searchTerm === "") {
+    searchResults.style.display = "none"; // Hide the results if the search bar is empty
+    return;
+  }
+
+  const results = filterSkins(searchTerm); // Filter skins based on the search term
+  displaySearchResults(results); // Display the filtered results
+});
+
+// Hide the search results when clicking outside the search bar
+document.addEventListener("click", (event) => {
+  if (
+    !searchBar.contains(event.target) &&
+    !searchResults.contains(event.target)
+  ) {
+    searchResults.style.display = "none";
+  }
+});
 
 // Fetch and load gun skin data
 fetchGunDetails();

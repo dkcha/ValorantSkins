@@ -2,7 +2,7 @@ from flask import Flask, jsonify, render_template
 import requests
 
 app = Flask(__name__)
-# data is now dict with gunGroup -> composite key (skinName, uuid) sorted by skinName -> skin data
+# data is now dict with gunGroup -> skinName sorted by skinName -> skin data
 data = {}
 uuid = {}
 
@@ -10,11 +10,11 @@ uuid = {}
     TODO
     - change index.html to be formatted like Valorant-style, grid and in its order
     - search bar
-    - sort the skins alphabetically
+    - sort the skins alphabetically **
     - highlight selected in horizontal list **
     - fix Random Favorite Skin (maybe delete it) **
-    - maybe take out name in horizontal list to just show icon
-    - certain skins (Game Over Sheriff) doesn't have displayIcon/fullRender but only within
+    - maybe take out name in horizontal list to just show icon **
+    - certain skins (Game Over Sheriff) doesn't have displayIcon/fullRender but only within **
         its nested chroma/levels. Need to find a workaround to display the skin in this case.
         Should only use {gunType}_dark only if there is no image mapped to the given skin.
 """
@@ -34,12 +34,18 @@ def load_skins():
             if (obj['displayName'] == 'Random Favorite Skin'):
                 continue
 
-            # Initialize the nested dictionaries, data{} holds data by gun groups and uuid is at a flat level for each uuid
-            data[gun_group][obj['uuid']] = {}  
+            # Initialize the nested dictionaries, data{} holds data by gun groups and displayName is at a flat level for each skin
+            display_name = obj['displayName']
+            data[gun_group][display_name] = {}  
             uuid[obj['uuid']] = {}
             for field in obj:
-                data[gun_group][obj['uuid']][field] = obj[field]
+                data[gun_group][display_name][field] = obj[field]
                 uuid[obj['uuid']][field] = obj[field]
+
+        for gun_group in data:
+            # Sort by displayName
+            sorted_skins = dict(sorted(data[gun_group].items(), key=lambda x: x[0]))  
+            data[gun_group] = sorted_skins
                 
     else:
         print('Failed API request to valorant-api')
