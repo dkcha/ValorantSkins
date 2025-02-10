@@ -5,13 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gun Collection</title>
     <link rel="stylesheet" href="/static/css/style.css" />
+    <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/tungsten" />
+    <style>
+      @import url("https://fonts.cdnfonts.com/css/arial-narrow");
+    </style>
   </head>
   <body>
     <h1>Gun Collection</h1>
-    <!-- <button id="refresh-button">Refresh Data</button> -->
+
+    <!-- Grid Container -->
     <div id="gun-grid" class="grid-container">
-      <!-- Dynamically populated guns will appear here -->
+      <!-- Column 1: SIDEARMS -->
+      <div class="gun-column">
+        <h2>SIDEARMS</h2>
+        <div class="gun-card" data-gun-type="Classic"></div>
+        <div class="gun-card" data-gun-type="Shorty"></div>
+        <div class="gun-card" data-gun-type="Frenzy"></div>
+        <div class="gun-card" data-gun-type="Ghost"></div>
+        <div class="gun-card" data-gun-type="Sheriff"></div>
+      </div>
+
+      <!-- Column 2: SMGS and SHOTGUNS -->
+      <div class="gun-column">
+        <h2>SMGS</h2>
+        <div class="gun-card" data-gun-type="Stinger"></div>
+        <div class="gun-card" data-gun-type="Spectre"></div>
+
+        <h2>SHOTGUNS</h2>
+        <div class="gun-card" data-gun-type="Bucky"></div>
+        <div class="gun-card" data-gun-type="Judge"></div>
+      </div>
+
+      <!-- Column 3: RIFLES and MELEE -->
+      <div class="gun-column">
+        <h2>RIFLES</h2>
+        <div class="gun-card" data-gun-type="Bulldog"></div>
+        <div class="gun-card" data-gun-type="Guardian"></div>
+        <div class="gun-card" data-gun-type="Phantom"></div>
+        <div class="gun-card" data-gun-type="Vandal"></div>
+
+        <h2>MELEE</h2>
+        <div class="gun-card" data-gun-type="Melee"></div>
+      </div>
+
+      <!-- Column 4: SNIPER RIFLES and MACHINE GUNS -->
+      <div class="gun-column">
+        <h2>SNIPER RIFLES</h2>
+        <div class="gun-card" data-gun-type="Marshal"></div>
+        <div class="gun-card" data-gun-type="Outlaw"></div>
+        <div class="gun-card" data-gun-type="Operator"></div>
+
+        <h2>MACHINE GUNS</h2>
+        <div class="gun-card" data-gun-type="Ares"></div>
+        <div class="gun-card" data-gun-type="Odin"></div>
+      </div>
     </div>
+
     <script src="/static/js/index.js"></script>
   </body>
 </html>

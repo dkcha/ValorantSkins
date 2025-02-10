@@ -101,7 +101,9 @@ function displayGunDetails(gunData, gunType) {
     let imageSrc = findImageSource(skin, gunType);
 
     skinCard.innerHTML = `
+    <div class="skin-image-container">
       <img src="${imageSrc}" alt="${displayName}" class="skin-image">
+      </div>
       <p>${displayName}</p>
     `;
 
@@ -147,7 +149,6 @@ function populateItems(
 
       // Create an image element for the swatch (only for chromas)
       if (itemType === "chroma") {
-        console.log("Sovereign ghost tf swatch: " + item["swatch"]);
         const swatchImage = document.createElement("img");
         swatchImage.src = item["swatch"] || "/static/images/default_swatch.png";
         swatchImage.alt = item["displayName"];
