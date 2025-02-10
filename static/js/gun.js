@@ -4,6 +4,30 @@ data = {};
 const params = new URLSearchParams(window.location.search);
 const gunType = params.get("type");
 
+// Displays guns in horizontal list, track selected skin to highlight for clarity
+let selectedSkin = null;
+
+// Track currently selected chroma/level for highlighting purposes
+let selectedItem = null;
+let selectedChroma = null;
+let selectedLevel = null;
+
+// Get the volume slider element
+const volumeSlider = document.getElementById("volume-slider");
+
+// Get all video elements on the page
+const videos = document.querySelectorAll("video");
+
+// Load the saved volume level from localStorage (default to 1 if not set)
+const savedVolume = localStorage.getItem("volumeLevel");
+const initialVolume = savedVolume !== null ? parseFloat(savedVolume) : 1;
+const muteButton = document.getElementById("mute-button");
+let isMuted = false;
+
+// Get the search bar and results container
+const searchBar = document.getElementById("search-bar");
+const searchResults = document.getElementById("search-results");
+
 // Fetch and load gun details from API or local storage
 async function fetchGunDetails() {
   if (!gunType) {
@@ -29,9 +53,8 @@ async function fetchGunDetails() {
   }
 }
 
-// Displays guns in horizontal list, track selected skin to highlight for clarity
-let selectedSkin = null;
-
+// Finds image source of the skin, usually located in the data[displayIcon] however some skins'
+// images are located in nested fields within levels or chromas
 function findImageSource(skin, gunType) {
   // Determine the image source
   let imageSrc = "";
@@ -51,9 +74,18 @@ function findImageSource(skin, gunType) {
   imageSrc =
     skin["displayIcon"] || imageSrc || `/static/images/${gunTypeName}.png`;
 
+  // If given skin is the standard, default skin (e.g. Standard Guardian), use asset image
+  if (
+    skin["displayName"].startsWith("Standard") &&
+    skin["displayName"].split(" ").length == 2
+  ) {
+    imageSrc = `/static/images/${gunType.toLowerCase()}.png`;
+  }
+
   return imageSrc;
 }
 
+// Displays skin data (levels and chromas) and videos if it has any
 function displayGunDetails(gunData, gunType) {
   const skinContainer = document.getElementById("skin-container");
   skinContainer.innerHTML = "";
@@ -68,15 +100,6 @@ function displayGunDetails(gunData, gunType) {
     // Determine the image source
     let imageSrc = findImageSource(skin, gunType);
 
-    // If given skin is the standard, default skin (e.g. Standard Guardian), use asset image
-    if (
-      displayName.startsWith("Standard") &&
-      displayName.split(" ").length == 2
-    ) {
-      imageSrc = `/static/images/${gunType.toLowerCase()}.png`;
-    }
-
-    // <p>${gunData[skin]["displayName"]}</p> (added within skinCard.innerHTML for skin name in list)
     skinCard.innerHTML = `
       <img src="${imageSrc}" alt="${displayName}" class="skin-image">
       <p>${displayName}</p>
@@ -99,9 +122,116 @@ function displayGunDetails(gunData, gunType) {
   }
 }
 
-// Track currently selected chroma/level for highlighting purposes
-let selectedChroma = null;
-let selectedLevel = null;
+// Populate div items for skin (levels/chromas)
+function populateItems(
+  containerId,
+  items,
+  itemType,
+  skinVideo,
+  skinImage,
+  gunType
+) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = `<h3>${
+    itemType === "chroma" ? "Chromas" : "Levels"
+  }:</h3>`;
+
+  let anyItem = false;
+  items?.forEach((item, index) => {
+    if (
+      (itemType === "level" && item["streamedVideo"]) ||
+      (itemType === "chroma" && item["swatch"])
+    ) {
+      const itemDiv = document.createElement("div");
+      itemDiv.className = itemType === "chroma" ? "chroma-item" : "level-item";
+
+      // Create an image element for the swatch (only for chromas)
+      if (itemType === "chroma") {
+        console.log("Sovereign ghost tf swatch: " + item["swatch"]);
+        const swatchImage = document.createElement("img");
+        swatchImage.src = item["swatch"] || "/static/images/default_swatch.png";
+        swatchImage.alt = item["displayName"];
+        swatchImage.className = "chroma-swatch";
+        itemDiv.appendChild(swatchImage);
+      }
+
+      // Create a text element for the item name
+      const itemText = document.createElement("div");
+      itemText.className = itemType === "chroma" ? "chroma-text" : "level-text";
+
+      if (itemType === "level") {
+        if (item["levelItem"]) {
+          let text = item["levelItem"].split("::")[1];
+          if (text === "SoundEffects") {
+            text = "Sound Effects";
+          }
+          itemText.textContent = text;
+        } else {
+          itemText.textContent = "Base";
+        }
+        // Create a text element for the level name
+        itemDiv.innerHTML = "LEVEL " + ++index;
+      } else {
+        itemText.textContent = item["displayName"];
+      }
+
+      // Append the text to the itemDiv
+      itemDiv.appendChild(itemText);
+
+      // Handle hover events
+      itemDiv.addEventListener("mouseover", () => {
+        itemText.style.display = "block"; // Show text on hover
+      });
+
+      itemDiv.addEventListener("mouseout", () => {
+        itemText.style.display = "none"; // Hide text on mouseout
+        skinVideo.style.display = "none";
+        skinImage.style.display = "block";
+        skinVideo.pause(); // Pause the video
+        skinVideo.currentTime = 0; // Reset the video to the beginning
+      });
+
+      // Handle click to highlight the item
+      itemDiv.addEventListener("click", () => {
+        // Remove highlight from the previously selected item
+        if (selectedItem) {
+          selectedItem.classList.remove("selected");
+        }
+
+        // Highlight the clicked item
+        itemDiv.classList.add("selected");
+        selectedItem = itemDiv;
+
+        // Display video for given item (level/chroma)
+        if (item["streamedVideo"]) {
+          skinVideo.src = item["streamedVideo"];
+          skinVideo.style.display = "block";
+          skinImage.style.display = "none";
+          skinVideo.play(); // Start playing the video
+        } else {
+          // If the item doesn't have a streamed video, display the skin's displayIcon or fullRender
+          skinImage.src =
+            item["displayIcon"] ||
+            item["fullRender"] ||
+            `/static/images/${gunType.toLowerCase()}_dark.png`;
+          skinImage.style.display = "block";
+          skinVideo.style.display = "none";
+        }
+      });
+
+      container.appendChild(itemDiv);
+      anyItem = true;
+    }
+  });
+
+  if (!anyItem) {
+    container.innerHTML = `<h3>${
+      itemType === "chroma" ? "Chromas" : "Levels"
+    }:</h3><p>No ${
+      itemType === "chroma" ? "chromas" : "levels"
+    } available.</p>`;
+  }
+}
 
 // Display skin details in window when selected from horizontal list
 function showSkinDetails(skin, gunType, imageSrc) {
@@ -123,176 +253,28 @@ function showSkinDetails(skin, gunType, imageSrc) {
   skinNameContainer.textContent = skin["displayName"];
 
   // Display the skin image (displayIcon or fullRender)
-  if (
-    skin["displayName"].startsWith("Standard") &&
-    skin["displayName"].split(" ").length == 2
-  ) {
-    skinImage.src = `/static/images/${gunType.toLowerCase()}.png`;
-  } else {
-    skinImage.src =
-      imageSrc ||
-      skin["displayIcon"] ||
-      skin["fullRender"] ||
-      `/static/images/${gunType.toLowerCase()}_dark.png`;
-  }
+  skinImage.src = findImageSource(skin, gunType);
   skinImage.style.display = "block";
 
-  // Populate chromas
-  const chromaContainer = document.getElementById("chromaContainer");
-  chromaContainer.innerHTML = "<h3>Chromas:</h3>";
+  // Populate chromas using the generic function
+  populateItems(
+    "chromaContainer",
+    skin["chromas"],
+    "chroma",
+    skinVideo,
+    skinImage,
+    gunType
+  );
 
-  let anyChroma = false;
-  skin["chromas"]?.forEach((chroma) => {
-    if (chroma["swatch"]) {
-      const chromaDiv = document.createElement("div");
-      chromaDiv.className = "chroma-item";
-
-      // Create an image element for the swatch
-      const swatchImage = document.createElement("img");
-      swatchImage.src = chroma["swatch"] || "/static/images/default_swatch.png"; // Fallback image if swatch is missing
-      swatchImage.alt = chroma["displayName"];
-      swatchImage.className = "chroma-swatch";
-
-      // Create a text element for the chroma name
-      const chromaText = document.createElement("div");
-      chromaText.textContent = chroma["displayName"];
-      chromaText.className = "chroma-text";
-
-      // Append the image and text to the chromaDiv
-      chromaDiv.appendChild(swatchImage);
-      chromaDiv.appendChild(chromaText);
-
-      // Handle hover events
-      chromaDiv.addEventListener("mouseover", () => {
-        chromaText.style.display = "block"; // Show text on hover
-      });
-
-      chromaDiv.addEventListener("mouseout", () => {
-        chromaText.style.display = "none"; // Hide text on mouseout
-        skinVideo.style.display = "none";
-        skinImage.style.display = "block";
-        skinVideo.pause(); // Pause the video
-        skinVideo.currentTime = 0; // Reset the video to the beginning
-      });
-
-      // Handle click to highlight the chroma
-      chromaDiv.addEventListener("click", () => {
-        // Remove highlight from the previously selected chroma
-        if (selectedChroma) {
-          selectedChroma.classList.remove("selected");
-        }
-
-        // Remove highlight from the previously selected level
-        if (selectedLevel) {
-          selectedLevel.classList.remove("selected");
-          selectedLevel = null; // Clear the selected level
-        }
-
-        // Highlight the clicked chroma
-        chromaDiv.classList.add("selected");
-        selectedChroma = chromaDiv;
-
-        if (chroma["streamedVideo"]) {
-          // If the chroma has a streamed video, display it
-          skinVideo.src = chroma["streamedVideo"];
-          skinVideo.style.display = "block";
-          skinImage.style.display = "none";
-          skinVideo.play(); // Start playing the video
-        } else {
-          // If the chroma doesn't have a streamed video, display the skin's displayIcon or fullRender
-          skinImage.src =
-            chroma["displayIcon"] ||
-            chroma["fullRender"] ||
-            `/static/images/${gunType.toLowerCase()}_dark.png`;
-          skinImage.style.display = "block";
-          skinVideo.style.display = "none";
-        }
-      });
-
-      chromaContainer.appendChild(chromaDiv);
-      anyChroma = true;
-    }
-  });
-
-  if (!anyChroma) {
-    chromaContainer.innerHTML = "<h3>Chromas:</h3><p>No chromas available.</p>";
-  }
-
-  // Populate levels
-  const levelContainer = document.getElementById("levelContainer");
-  levelContainer.innerHTML = "<h3>Levels:</h3>";
-
-  let levelNum = 1;
-  let anyLevel = false;
-  skin["levels"]?.forEach((level) => {
-    if (level["streamedVideo"]) {
-      const levelDiv = document.createElement("div");
-      levelDiv.className = "level-item";
-      let text = "";
-
-      // Grab text from skin data with some edge cases
-      if (level["levelItem"]) {
-        text = level["levelItem"].split("::")[1];
-        if (text == "SoundEffects") {
-          text = "Sound Effects";
-        }
-      } else {
-        text = "Base";
-      }
-
-      // Create a text element for the level name
-      levelDiv.innerHTML = "LEVEL " + levelNum;
-      const levelText = document.createElement("div");
-      levelText.textContent = text;
-      levelText.className = "level-text";
-
-      // Append the text to the levelDiv
-      levelDiv.appendChild(levelText);
-
-      // Handle hover events
-      levelDiv.addEventListener("mouseover", () => {
-        levelText.style.display = "block"; // Show text on hover
-      });
-
-      levelDiv.addEventListener("mouseout", () => {
-        levelText.style.display = "none";
-        skinVideo.style.display = "none";
-        skinImage.style.display = "block";
-        skinVideo.pause(); // Pause the video
-        skinVideo.currentTime = 0; // Reset the video to the beginning
-      });
-
-      levelDiv.addEventListener("click", () => {
-        // Remove highlight from the previously selected chroma
-        if (selectedLevel) {
-          selectedLevel.classList.remove("selected");
-        }
-
-        // Remove highlight from the previously selected chroma
-        if (selectedChroma) {
-          selectedChroma.classList.remove("selected");
-          selectedChroma = null; // Clear the selected chroma
-        }
-
-        // Highlight the clicked chroma
-        levelDiv.classList.add("selected");
-        selectedLevel = levelDiv;
-
-        skinVideo.src = level["streamedVideo"];
-        skinVideo.style.display = "block";
-        skinImage.style.display = "none";
-        skinVideo.play(); // Start playing the video
-      });
-
-      levelContainer.appendChild(levelDiv);
-      anyLevel = true;
-    }
-    levelNum++;
-  });
-
-  if (!anyLevel) {
-    levelContainer.innerHTML = "<h3>Levels:</h3><p>No levels available.</p>";
-  }
+  // Populate levels using the generic function
+  populateItems(
+    "levelContainer",
+    skin["levels"],
+    "level",
+    skinVideo,
+    skinImage,
+    gunType
+  );
 }
 
 // Helper function to display streamed video
@@ -323,10 +305,9 @@ function clearLocalStorage() {
   localStorage.clear();
 }
 
-document.getElementById("refresh-button").addEventListener("click", () => {
-  clearLocalStorage();
-  fetchGunDetails(); // Refetch the data
-});
+function isNotEmptyArray(arr) {
+  return Array.isArray(arr) && arr.length > 0;
+}
 
 ////////////////////////////////////////////////
 // Buttons and other miscellaneous functionality
@@ -337,15 +318,11 @@ document.getElementById("home-button").addEventListener("click", () => {
   window.location.href = "/";
 });
 
-// Get the volume slider element
-const volumeSlider = document.getElementById("volume-slider");
-
-// Get all video elements on the page
-const videos = document.querySelectorAll("video");
-
-// Load the saved volume level from localStorage (default to 1 if not set)
-const savedVolume = localStorage.getItem("volumeLevel");
-const initialVolume = savedVolume !== null ? parseFloat(savedVolume) : 1;
+// Refresh data functionality
+document.getElementById("refresh-button").addEventListener("click", () => {
+  clearLocalStorage();
+  fetchGunDetails(); // Refetch the data
+});
 
 // Set the initial volume for all videos and the slider
 videos.forEach((video) => {
@@ -366,10 +343,7 @@ volumeSlider.addEventListener("input", () => {
   localStorage.setItem("volumeLevel", volume);
 });
 
-// Optional: Add a mute button
-const muteButton = document.getElementById("mute-button");
-let isMuted = false;
-
+// Mute button functionality
 muteButton.addEventListener("click", () => {
   isMuted = !isMuted; // Toggle mute state
 
@@ -391,14 +365,6 @@ muteButton.addEventListener("click", () => {
     volumeSlider.value = volume;
   }
 });
-
-function isNotEmptyArray(arr) {
-  return Array.isArray(arr) && arr.length > 0;
-}
-
-// Get the search bar and results container
-const searchBar = document.getElementById("search-bar");
-const searchResults = document.getElementById("search-results");
 
 // Function to filter skins based on the search input
 function filterSkins(searchTerm) {
