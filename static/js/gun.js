@@ -134,9 +134,9 @@ function populateItems(
   gunType
 ) {
   const container = document.getElementById(containerId);
-  container.innerHTML = `<h3>${
-    itemType === "chroma" ? "Chromas" : "Levels"
-  }:</h3>`;
+  // container.innerHTML = `<h3>${
+  //   itemType === "chroma" ? "Chromas" : "Levels"
+  // }:</h3>`;
 
   let anyItem = false;
   items?.forEach((item, index) => {
@@ -234,8 +234,29 @@ function populateItems(
   }
 }
 
+// Add these helper functions at the top
+function clearSkinDetails() {
+  // Clear chromas
+  const chromaContainer = document.getElementById("chromaContainer");
+  chromaContainer.innerHTML = "";
+
+  // Clear levels
+  const levelContainer = document.getElementById("levelContainer");
+  levelContainer.innerHTML = "";
+
+  // Clear media
+  const skinVideo = document.getElementById("skin-video");
+  const skinImage = document.getElementById("skin-image");
+  skinVideo.style.display = "none";
+  skinImage.style.display = "none";
+  skinVideo.pause();
+  skinVideo.removeAttribute("src");
+  skinImage.removeAttribute("src");
+}
+
 // Display skin details in window when selected from horizontal list
 function showSkinDetails(skin, gunType, imageSrc) {
+  clearSkinDetails();
   const skinDetailsContainer = document.getElementById("skin-details");
   //const mediaContainer = document.getElementById("media-container");
   const skinVideo = document.getElementById("skin-video");
@@ -243,6 +264,7 @@ function showSkinDetails(skin, gunType, imageSrc) {
 
   // Show the container
   skinDetailsContainer.classList.add("visible");
+  skinDetailsContainer.style.display = "grid";
 
   // Clear previous content
   skinVideo.style.display = "none";
@@ -400,6 +422,13 @@ function displaySearchResults(results) {
       const skinCards = document.querySelectorAll(".skin-card");
       skinCards.forEach((skinCard) => {
         if (skinCard.querySelector("p").textContent === displayName) {
+          // Remove selected class from all skins
+          document
+            .querySelectorAll(".skin-card")
+            .forEach((c) => c.classList.remove("selected"));
+
+          clearSkinDetails();
+
           // Highlight the selected skin card
           skinCard.classList.add("selected");
 
