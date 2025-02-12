@@ -109,13 +109,18 @@ function displayGunDetails(gunData, gunType) {
 
     // Handle skin click
     skinCard.addEventListener("click", () => {
+      // Remove selected class from all skins
+      document
+        .querySelectorAll(".skin-card")
+        .forEach((c) => c.classList.remove("selected"));
+
       // Remove highlight from the previously selected level
       if (selectedSkin) {
         selectedSkin.classList.remove("selected");
-        selectedSkin = null; // Clear the selected level
+        selectedSkin = null;
       }
 
-      // Highlight the clicked chroma
+      // Highlight the selected item
       skinCard.classList.add("selected");
       selectedSkin = skinCard;
       showSkinDetails(skin, gunType, imageSrc);
@@ -134,9 +139,6 @@ function populateItems(
   gunType
 ) {
   const container = document.getElementById(containerId);
-  // container.innerHTML = `<h3>${
-  //   itemType === "chroma" ? "Chromas" : "Levels"
-  // }:</h3>`;
 
   let anyItem = false;
   items?.forEach((item, index) => {
@@ -226,9 +228,7 @@ function populateItems(
   });
 
   if (!anyItem) {
-    container.innerHTML = `<h3>${
-      itemType === "chroma" ? "Chromas" : "Levels"
-    }:</h3><p>No ${
+    container.innerHTML = `<p>No ${
       itemType === "chroma" ? "chromas" : "levels"
     } available.</p>`;
   }
@@ -351,11 +351,12 @@ document.getElementById("refresh-button").addEventListener("click", () => {
 videos.forEach((video) => {
   video.volume = initialVolume;
 });
-volumeSlider.value = initialVolume;
+volumeSlider.value = initialVolume * 100;
 
 // Add an event listener to the volume slider
 volumeSlider.addEventListener("input", () => {
-  const volume = volumeSlider.value; // Get the current slider value
+  // Get the current slider value and divide by 100 as valid range is from [0, 1]
+  const volume = volumeSlider.value / 100;
 
   // Set the volume for all videos
   videos.forEach((video) => {
@@ -375,9 +376,6 @@ muteButton.addEventListener("click", () => {
     video.muted = isMuted;
   });
 
-  // Update button text
-  muteButton.textContent = isMuted ? "Unmute" : "Mute";
-
   // If unmuting, restore the volume level from localStorage
   if (!isMuted) {
     const savedVolume = localStorage.getItem("volumeLevel");
@@ -385,7 +383,10 @@ muteButton.addEventListener("click", () => {
     videos.forEach((video) => {
       video.volume = volume;
     });
+
     volumeSlider.value = volume;
+    // Need to multiply volume by 100 again to show up on slider range as it's from [1, 100]
+    document.getElementById("volume-slider").value = volume * 100;
   }
 });
 
@@ -426,6 +427,11 @@ function displaySearchResults(results) {
           document
             .querySelectorAll(".skin-card")
             .forEach((c) => c.classList.remove("selected"));
+
+          if (selectedSkin) {
+            selectedSkin.classList.remove("selected");
+            selectedSkin = null;
+          }
 
           clearSkinDetails();
 
