@@ -224,6 +224,47 @@ function populateItems(
 
       container.appendChild(itemDiv);
       anyItem = true;
+    } else if (itemType === "level") {
+      // todo populate the level-item div but grey it out maybe
+      const itemDiv = document.createElement("div");
+      itemDiv.className = itemType === "chroma" ? "chroma-item" : "level-item";
+
+      // Create a text element for the item name
+      const itemText = document.createElement("div");
+      itemText.className = itemType === "chroma" ? "chroma-text" : "level-text";
+
+      if (itemType === "level") {
+        if (item["levelItem"]) {
+          let text = item["levelItem"].split("::")[1];
+          if (text === "SoundEffects") {
+            text = "Sound Effects";
+          }
+          itemText.textContent = text;
+        } else {
+          itemText.textContent = "Base";
+        }
+        // Create a text element for the level name
+        itemDiv.innerHTML = "LEVEL " + ++index;
+      } else {
+        itemText.textContent = item["displayName"];
+      }
+
+      // Append the text to the itemDiv
+      itemDiv.appendChild(itemText);
+
+      // grey out the div
+      itemDiv.addEventListener("mouseover", () => {
+        itemText.style.display = "block"; // Show text on hover
+      });
+
+      // ungrey it out
+      itemDiv.addEventListener("mouseout", () => {
+        itemText.style.display = "none"; // Hide text on mouseout
+        skinVideo.style.display = "none";
+        skinImage.style.display = "block";
+      });
+      container.appendChild(itemDiv);
+      anyItem = true;
     }
   });
 

@@ -21,7 +21,6 @@ body {
   left: 0;
   right: 0;
   background: #0f1923;
-  padding: 15px 20px;
   z-index: 10000;
   display: flex;
   gap: 20px;
@@ -180,7 +179,7 @@ h1 {
 
 #skinNameContainer {
   grid-area: title;
-  position: fixed;
+  position: relative;
   top: 0;
   color: white;
 
@@ -189,13 +188,11 @@ h1 {
   right: 0;
   text-align: center;
 
-  font-size: 2.5rem;
-  padding: 25px 0;
+  font-size: 2rem;
   margin: 0;
   z-index: 1000;
   background: #1a1f28;
   width: 100%;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .left-column {
@@ -280,7 +277,6 @@ h1 {
   cursor: pointer;
 
   position: static !important; /* Reset positioning context */
-  z-index: 0; /* Ensure hover context */
   margin: 8px 0; /* Add vertical spacing */
 
   white-space: nowrap;
@@ -514,35 +510,7 @@ h1 {
   border-radius: 4px;
 }
 
-/* Volume and Search controls */
-#search-container {
-  margin-bottom: 20px;
-  position: relative;
-}
-
-#search-bar {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-#search-results {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  max-height: 200px;
-  overflow-y: auto;
-  background-color: #1e1e1e;
-  border: 1px solid #2a3139;
-  border-radius: 4px;
-  z-index: 9999;
-  display: none;
-  color: white;
-}
-
+/* Home and Refresh button */
 #home-button,
 #refresh-button {
   z-index: 10000; /* Higher than any other elements */
@@ -716,11 +684,29 @@ button:hover::after {
   }
 }
 
+/* Search bar styling */
 #search-container {
+  margin-bottom: 20px;
+  position: relative;
   position: relative;
   padding: 20px 0 0;
   width: 100%;
-  max-width: 500px;
+  max-width: 300px;
+}
+
+#search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: #1e1e1e;
+  border: 1px solid #2a3139;
+  border-radius: 4px;
+  z-index: 9999;
+  display: none;
+  color: white;
 }
 
 #search-bar {
