@@ -287,10 +287,9 @@ h1 {
 }
 
 .level-text {
-  position: fixed !important; /* Bypass parent overflow */
-  transform: translateX(-50%);
-  top: calc(var(--mouse-y) + 15px);
-  left: var(--mouse-x);
+  /* position: fixed !important; Bypass parent overflow */
+  position: relative;
+  display: none;
   opacity: 0;
   transition: opacity 0.2s;
   pointer-events: none;
@@ -324,10 +323,12 @@ h1 {
 
 .level-item-unavailable:hover .level-text {
   opacity: 0.5;
+  background: rgba(0, 0, 0, 0.9);
 }
 
 .level-item:hover .level-text {
-  opacity: 1;
+  opacity: 0.5;
+  background: rgba(0, 0, 0, 0.9);
 }
 
 .chroma-item.selected,
