@@ -302,6 +302,30 @@ h1 {
   color: white;
 }
 
+.level-item-unavailable,
+.chroma-item-unavailable {
+  width: 180px; /* Slightly wider */
+  min-width: 180px; /* Prevent width variation */
+  padding: 12px 15px;
+  background: #2a3139;
+  border-radius: 4px;
+  cursor: pointer;
+
+  position: static !important; /* Reset positioning context */
+  margin: 8px 0; /* Add vertical spacing */
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center; /* Center text */
+  opacity: 0.5;
+  transition: all 0.2s ease;
+}
+
+.level-item-unavailable:hover .level-text {
+  opacity: 0.5;
+}
+
 .level-item:hover .level-text {
   opacity: 1;
 }

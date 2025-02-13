@@ -227,7 +227,8 @@ function populateItems(
     } else if (itemType === "level") {
       // todo populate the level-item div but grey it out maybe
       const itemDiv = document.createElement("div");
-      itemDiv.className = itemType === "chroma" ? "chroma-item" : "level-item";
+      itemDiv.className =
+        (itemType === "chroma" ? "chroma-item" : "level-item") + "-unavailable";
 
       // Create a text element for the item name
       const itemText = document.createElement("div");
